@@ -57,14 +57,14 @@ demo:
     innerRimPower: 3.5
     innerRoughness: 0.11
     innerRimColor: '#9fd8ff'
-    waterDepth: 0.53
+    waterDepth: 0.47
     ripple: 0.0092
     dropStrength: 0.1
-    caustics: 0.25
-    foam: 1.1
+    caustics: 0.2
+    foam: 1.8
     waterLevel: -0.005
-    refraction: 0.185
-    absorption: 2.2
+    refraction: 0.265
+    absorption: 1.7
     waterShallow: '#5fc6f0'
     waterDeep: '#0a3f8f'
     highLevel: -0.04
@@ -83,10 +83,10 @@ demo:
     viscosity: 2
     relax: 0.05
     spinResponse: 1
-    cursorStrength: 1.2
-    cursorRadius: 0.18
-    cursorMaxSpeed: 3
-    cursorVertical: 0.5
+    cursorStrength: 5
+    cursorRadius: 0.37
+    cursorMaxSpeed: 6.5
+    cursorVertical: 1.5
     ballWake: 0.6
     flowDamping: 0.6
     ballCore: 0.17

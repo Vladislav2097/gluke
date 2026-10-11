@@ -70,14 +70,14 @@ const DEFAULTS = {
   innerRimColor: '#9fd8ff',
 
   // --- вода, вид ---
-  waterDepth: 0.53, // глубина до полного цвета, м
+  waterDepth: 0.47, // глубина до полного цвета, м
   ripple: 0.0092, // мелкая рябь поверх симуляции, м
   dropStrength: 0.1, // сила встряхивания по щелчку
-  caustics: 0.25,
-  foam: 1.1,
+  caustics: 0.2,
+  foam: 1.8,
   waterLevel: -0.005, // смещение уровня от плоскости Plane, м
-  refraction: 0.185, // искажение волнами (на телефоне прохода преломления нет)
-  absorption: 2.2, // поглощение толщи на метр пути
+  refraction: 0.265, // искажение волнами (на телефоне прохода преломления нет)
+  absorption: 1.7, // поглощение толщи на метр пути
   waterShallow: '#5fc6f0',
   waterDeep: '#0a3f8f',
 
@@ -100,10 +100,10 @@ const DEFAULTS = {
   viscosity: 2, // ×1e-5: у исходной панели шаг 0.000001, ползунку сайта нужны читаемые числа
   relax: 0.05, // возврат к уровню покоя
   spinResponse: 1, // реакция воды на вращение молекулы
-  cursorStrength: 1.2,
-  cursorRadius: 0.18, // м
-  cursorMaxSpeed: 3, // м/с
-  cursorVertical: 0.5, // доля вертикального движения курсора, уходящая «вглубь»
+  cursorStrength: 5,
+  cursorRadius: 0.37, // м
+  cursorMaxSpeed: 6.5, // м/с
+  cursorVertical: 1.5, // доля вертикального движения курсора, уходящая «вглубь»
   ballWake: 0.6,
   flowDamping: 0.6,
 
