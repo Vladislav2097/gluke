@@ -8,8 +8,9 @@ import { createBubbleMaterial, REFRACTION_LAYER } from './preview-water.js';
  *  - медленно всплывают и дрейфуют по плавному полю течения;
  *  - при вращении отстают от стенок (вода раскручивается с запаздыванием, spinUp);
  *  - курсор расталкивает их в своём вертикальном столбе.
- * Движение на CPU в пространстве pivot; границы — воксельная маска объёма
- * (сечения внутренней оболочки и букв по высоте, как у маски симуляции).
+ * Движение на CPU в пространстве pivot; границы — воксельная маска объёма (сечения внутренней
+ * оболочки по высоте) и буквы: они поворачиваются, поэтому проверяются каждый кадр по своему
+ * габариту в собственном кадре, а не впекаются в маску.
  */
 export class SuspendedParticles {
   constructor({ pivot, innerShell, obstacles, sim, cfg, count, level }) {
@@ -17,7 +18,14 @@ export class SuspendedParticles {
     this.level = level; // () => текущий уровень воды (локальный y)
     this.sim = sim;
     this.count = count;
-    this.buildVolume(innerShell, obstacles, cfg.voxel);
+    this.obstacles = obstacles;
+    this.obstacleBoxes = obstacles.map((o) => {
+      if (!o.geometry.boundingBox) o.geometry.computeBoundingBox();
+      return o.geometry.boundingBox.clone().expandByScalar(0.01);
+    });
+    this.obstacleInv = obstacles.map(() => new THREE.Matrix4());
+    this.buildVolume(innerShell, cfg.voxel);
+    this.syncObstacles();
 
     this.mesh = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 8, 6), createBubbleMaterial(false), count);
     this.mesh.material.uniforms.uOpacity.value = cfg.opacity;
@@ -35,7 +43,7 @@ export class SuspendedParticles {
   }
 
   // воксели внутри внутренней оболочки и вне букв: сечения по высоте + заливка чёт-нечет
-  buildVolume(innerShell, obstacles, cell) {
+  buildVolume(innerShell, cell) {
     const { sim } = this;
     const box = new THREE.Box3().setFromObject(innerShell); // pivot вращается только вокруг Y — берём по XZ с запасом
     const half = Math.max(box.max.x, -box.min.x, box.max.z, -box.min.z);
@@ -68,11 +76,6 @@ export class SuspendedParticles {
       const segs = [];
       sim.sliceMesh(innerShell, y, segs, null);
       fill(segs, 1, j);
-      for (const o of obstacles) {
-        const os = [];
-        sim.sliceMesh(o, y, os, null);
-        if (os.length) fill(os, 0, j);
-      }
     }
     // отступ от стенок: частица не должна «влипать» в стекло
     const eroded = new Uint8Array(this.voxels);
@@ -95,6 +98,9 @@ export class SuspendedParticles {
 
   inside(p) {
     if (p.y > this.level() - 0.03) return false; // под поверхностью
+    for (let i = 0; i < this.obstacles.length; i++) {
+      if (this.obstacleBoxes[i].containsPoint(_q.copy(p).applyMatrix4(this.obstacleInv[i]))) return false;
+    }
     const c = this.cell;
     return this.voxelAt(Math.floor((p.x - this.min.x) / c), Math.floor((p.y - this.min.y) / c),
       Math.floor((p.z - this.min.z) / c)) === 1;
@@ -119,9 +125,18 @@ export class SuspendedParticles {
     p.rise = this.cfg.rise * (0.3 + p.size / this.cfg.size); // крупные всплывают быстрее
   }
 
+  // pivot -> кадр буквы с её текущим поворотом
+  syncObstacles() {
+    this.obstacles.forEach((o, i) => {
+      o.updateMatrixWorld();
+      this.obstacleInv[i].copy(o.matrixWorld).invert().multiply(this.sim.pivot.matrixWorld);
+    });
+  }
+
   /** motion — { omega }: угловая скорость контейнера вокруг Y */
   update(dt, time, motion) {
     const c = this.cfg;
+    this.syncObstacles();
     // вода раскручивается вслед за стенками с запаздыванием; разница — течение относительно молекулы
     this.fluidOmega += (motion.omega - this.fluidOmega) * (1 - Math.exp(-dt / c.spinUp));
     const lag = (this.fluidOmega - motion.omega) * c.inertia;
@@ -178,4 +193,5 @@ export class SuspendedParticles {
 }
 
 const _target = new THREE.Vector3();
+const _q = new THREE.Vector3();
 const _next = new THREE.Vector3();

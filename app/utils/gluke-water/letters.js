@@ -15,17 +15,17 @@ function createLetterMaterial(p) {
 }
 
 /**
- * Буквы: смоделированы в GLB (Letter_A, Letter_C, Letter_G), здесь им назначается материал,
- * центр вращения и невидимый коллайдер для воды. Заменить буквы — значит заменить их меши
- * в модели (имена берутся из config.names.letters); режим «высокая вода» отсчитывает уровень
- * от низа одной из них (config.water.high.levelMesh).
+ * Буквы: смоделированы в GLB (Letter_H1, Letter_O, Letter_H2 — H·O·H), здесь им назначается
+ * материал и центр вращения. Препятствием для воды служат сами буквы: их сечение на уровне
+ * воды поворачивается вместе с ними (WaterSurfaceSim.syncObstacles). Заменить буквы — значит
+ * заменить их меши в модели (имена — config.names.letters); режим «высокая вода» отсчитывает
+ * уровень от низа одной из них (config.water.high.levelMesh).
  */
 export class Letters {
   // Буквы уже смоделированы в GLB (Молекула.blend): только назначаем материал
   static fromMeshes({ meshes, cfg }) {
     const material = createLetterMaterial(cfg);
     const found = meshes.filter(Boolean);
-    const colliders = [];
     for (const mesh of found) {
       mesh.material = material;
       // внутри стекла: видны через его преломление и подкрашиваются водой, а не рисуются поверх
@@ -33,15 +33,14 @@ export class Letters {
       mesh.layers.enable(REFRACTION_LAYER); // видны сквозь воду с преломлением
       mesh.castShadow = true;
       centerPivot(mesh);
-      colliders.push(createCollider(mesh, cfg));
     }
     material.depthWrite = true;
-    return new Letters(found, colliders, material, cfg);
+    return new Letters(found, material, cfg);
   }
 
-  constructor(meshes, colliders, material, cfg) {
+  constructor(meshes, material, cfg) {
     this.meshes = meshes;
-    this.colliders = colliders; // невидимые неподвижные препятствия для воды
+    this.obstacles = meshes; // препятствия для воды — сами буквы, с их текущим поворотом
     this.material = material;
     this.cfg = cfg;
     this.rest = meshes.map((m) => m.quaternion.clone());
@@ -79,33 +78,6 @@ function centerPivot(mesh) {
   geo.computeBoundingBox();
   geo.computeBoundingSphere();
   mesh.position.add(c.multiply(mesh.scale).applyQuaternion(mesh.quaternion));
-}
-
-// Невидимый статичный коллайдер: вертикальный цилиндр, описывающий букву при любом повороте
-// (collider: 'cylinder'), либо коробка по габариту буквы в исходном положении ('box')
-function createCollider(mesh, cfg) {
-  const geo = mesh.geometry;
-  const box = geo.boundingBox;
-  const size = box.getSize(new THREE.Vector3());
-  const pad = cfg.colliderPadding;
-  let cgeo;
-  if (cfg.collider === 'box') {
-    cgeo = new THREE.BoxGeometry(size.x + pad * 2, size.y, size.z + pad * 2);
-  } else {
-    const pos = geo.attributes.position;
-    let r = 0;
-    for (let i = 0; i < pos.count; i++) r = Math.max(r, Math.hypot(pos.getX(i), pos.getZ(i)));
-    cgeo = new THREE.CylinderGeometry(r + pad, r + pad, size.y, 32);
-  }
-  cgeo.translate(0, (box.min.y + box.max.y) / 2, 0);
-  const collider = new THREE.Mesh(cgeo, new THREE.MeshBasicMaterial());
-  collider.name = `${mesh.name}_collider`;
-  collider.visible = false;
-  collider.position.copy(mesh.position);
-  collider.quaternion.copy(mesh.quaternion);
-  collider.scale.copy(mesh.scale);
-  mesh.parent.add(collider);
-  return collider;
 }
 
 const _cam = new THREE.Vector3();

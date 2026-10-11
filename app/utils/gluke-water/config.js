@@ -46,7 +46,7 @@ const SIMULATION_CONFIG = {
     innerShell: 'Sphere.006',
     fluidSeed: 'Plane', // плоскость уровня воды
     spheres: ['Icosphere', 'Icosphere.001', 'Icosphere.002', 'Icosphere.003', 'Icosphere.004'],
-    letters: ['Letter_A', 'Letter_C', 'Letter_G'],
+    letters: ['Letter_H1', 'Letter_O', 'Letter_H2'], // H·O·H — молекула воды (Молекула_HOH.blend)
   },
 
   animation: {
@@ -132,8 +132,6 @@ const SIMULATION_CONFIG = {
     showTrianglePlaceholders: false,
     faceCamera: true, // буквы всегда повёрнуты к зрителю
     faceTilt: 0, // 0 — только вокруг вертикали, 1 — ещё и наклон к камере по высоте
-    collider: 'cylinder', // невидимое препятствие для воды: 'cylinder' (любой поворот) | 'box'
-    colliderPadding: 0, // м, запас коллайдера вокруг буквы
   },
 
   water: {
@@ -143,10 +141,10 @@ const SIMULATION_CONFIG = {
     depthScale: 0.7,
     surfaceOpacity: 0.12,
     ripple: 0.0008, // мелкая рябь поверх симуляции, м
-    mode: 'level', // 'level' — вода по Plane с шариками, 'high' — высокая вода до буквы C без шариков (?mode=high)
+    mode: 'level', // 'level' — вода по Plane с шариками, 'high' — высокая вода до буквы O без шариков
     // режим 'high': большая толща воды читается по движению внутри
     high: {
-      levelMesh: 'Letter_C', // уровень — от низа этой буквы
+      levelMesh: 'Letter_O', // уровень — от низа этой буквы
       levelOffset: -0.04, // м — смещение уровня от низа буквы
       waves: 1, // насколько волнение симуляции (курсор, вращение) искажает толщу
       wobble: 1, // постоянное медленное колыхание преломления
@@ -188,6 +186,7 @@ const SIMULATION_CONFIG = {
       cursorStrength: 1.2,
       cursorMaxSpeed: 3, // м/с — ограничение скорости курсора для воды
       cursorVertical: 0.5, // доля вертикального движения курсора, уходящая в движение воды «вглубь»
+      obstaclePadding: 0.6, // запас вокруг сечения буквы в воде, доля ячейки сетки (тонкие штрихи не протекают)
     },
   },
 

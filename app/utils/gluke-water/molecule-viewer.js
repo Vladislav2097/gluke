@@ -147,7 +147,7 @@ export class MoleculeViewer {
     this.water = new PreviewWater({
       renderer: this.renderer, pivot: this.pivot, innerShell: inner, fluidSeed: seed,
       highLevelMesh: findByName(model, cfg.water.high.levelMesh),
-      obstacles: this.letters.colliders, cfg: cfg.water, quality: this.quality,
+      obstacles: this.letters.obstacles, cfg: cfg.water, quality: this.quality,
     });
     this.spheres = new FloatingSpheres({
       meshes: n.spheres.map((s) => findByName(model, s)), cfg: cfg.spheres, water: this.water, pivot: this.pivot,
@@ -238,7 +238,7 @@ export class MoleculeViewer {
     sim.setCursor(local.x, local.z, lv.x, lv.z);
   }
 
-  /** 'level' — вода по Plane с шариками; 'high' — высокая вода до буквы C, без шариков */
+  /** 'level' — вода по Plane с шариками; 'high' — высокая вода до буквы O, без шариков */
   setWaterMode(mode) {
     this.waterMode = mode === 'high' ? 'high' : 'level';
     const high = this.waterMode === 'high';
@@ -321,6 +321,7 @@ export class MoleculeViewer {
     );
     this.camera.lookAt(this.target);
     this.letters.faceCamera(this.camera);
+    this.water.sim.syncObstacles(); // сечения букв в воде — под их новый поворот
 
     if (!this.paused) {
       this.updateCursor(dt);

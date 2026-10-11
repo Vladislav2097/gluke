@@ -395,7 +395,7 @@ export class PreviewWater {
       new THREE.Matrix4().copy(pivot.matrixWorld).invert(),
     ).y;
     this.levelLocal = this.baseLevel + cfg.levelOffset;
-    // уровень режима «высокая вода» отсчитывается от низа буквы (по умолчанию C в верхнем шаре)
+    // уровень режима «высокая вода» отсчитывается от низа буквы (по умолчанию O в верхнем шаре)
     this.highBaseLevel = highLevelMesh
       ? new THREE.Box3().setFromObject(highLevelMesh).min.y - pivot.getWorldPosition(new THREE.Vector3()).y
       : this.baseLevel;
@@ -407,7 +407,7 @@ export class PreviewWater {
 
     this.uniforms = {
       uHeight: { value: sim.texture },
-      uMask: { value: sim.maskTexture },
+      uMask: { value: sim.dynTarget.texture }, // маска кадра: оболочка + буквы с текущим поворотом
       uSimOrigin: { value: sim.origin },
       uSimSize: { value: sim.size },
       uLevel: { value: this.levelLocal },
@@ -602,7 +602,7 @@ export class PreviewWater {
     this.sim.build(this.levelLocal);
     const u = this.uniforms;
     u.uLevel.value = this.levelLocal;
-    u.uMask.value = this.sim.maskTexture;
+    u.uMask.value = this.sim.dynTarget.texture;
     u.uHeight.value = this.sim.texture;
     u.uNormalEps.value = Math.max(this.sim.cell.x, this.sim.cell.y);
     this.cap.geometry.dispose();
@@ -635,7 +635,7 @@ export class PreviewWater {
     this.particles.reset();
   }
 
-  /** true — высокая вода (до буквы C): свой уровень, взвесь, колыхание толщи */
+  /** true — высокая вода (до буквы O): свой уровень, взвесь, колыхание толщи */
   setHigh(high) {
     this.high = high;
     this.uniforms.uHigh.value = high ? 1 : 0;

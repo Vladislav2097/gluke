@@ -11,7 +11,7 @@ categoryOrder:
   webgl: 10
 position: 31
 featured: false
-status: draft
+status: published
 navigation: false
 period: "2026"
 updated: 2026-10-11
@@ -23,7 +23,7 @@ services:
   - A parameter lab on the page
 demo:
   widget: water
-  alt: A glass molecule of three lobes with letters inside; blue water sloshes in the lower lobes and clear balls float on it
+  alt: A glass water molecule with the letters H, O and H in its lobes; blue water sloshes in the lower lobes and clear balls float on it
   tunable: true
   model: /media/projects/water/molecule.glb
   params:
@@ -140,7 +140,7 @@ metrics:
     label: water modes — with floating balls, and high water with suspended particles
 cover:
   src: /media/projects/water/water-cover.jpg
-  alt: A glass molecule of three lobes on a dark background, with blue water and clear balls in the lower lobes
+  alt: A glass molecule of three lobes with the letters H, O and H on a dark background, with blue water and clear balls in the lower lobes
   width: 1680
   height: 945
 media: []
@@ -150,14 +150,14 @@ media: []
 
 A glass object with liquid inside is one of the most rewarding subjects in 3D and one of the most awkward for a browser. In a render it is simple: the glass refracts, the water sloshes, a frame takes minutes. On a page the same frame has to be drawn sixty times a second, on a transparent background, and the water has to respond to what the visitor does.
 
-We wanted to build such a scene entirely in real time: a molecule of three glass lobes with thick walls, letters and water with floating balls inside. The molecule spins and turns further as the page scrolls, and the water lives along with it: it sloshes when the molecule turns, bounces off the walls and the letters, and ripples away from the cursor.
+We wanted to build such a scene entirely in real time: a water molecule of three glass lobes with thick walls: the letters H, O and H in the lobes, and actual water with floating balls inside. The molecule spins and turns further as the page scrolls, and the water lives along with it: it sloshes when the molecule turns, bounces off the walls and the letters, and ripples away from the cursor.
 
-The model was made in Blender for this job: outer and inner shells of 7.5 thousand triangles each, three letters, five balls and a plane that sets the water level. The whole file is 456 KB.
+The model was made in Blender for this job: outer and inner shells of 7.5 thousand triangles each, the letters H·O·H in Moderustic with a bevel, five balls and a plane that sets the water level. The whole file is 383 KB.
 
 ## The work
 
 - The water is not particles but a height field on the GPU: the shallow-water wave equation on a grid of about 480×150 cells, 240 steps a second. The grid lives in the molecule's own space, so the water turns with the glass, and the equation includes the forces of a rotating vessel — centrifugal and those from angular acceleration. That is why the water sloshes not on a timer but because the molecule was turned;
-- the water's boundaries are the actual cross-section of the inner shell at the water level. Letters that dip into the water are cut out of the mask as obstacles: waves bounce off the glass and the letters and wrap around them, a light edge appears along the walls, and foam where the water moves fast. Cells behind the wall carry on the height of the neighbouring water — otherwise stepped marks were left on the glass;
+- the water's boundaries are the actual cross-section of the inner shell at the water level. Letters that dip into the water are obstacles, and moving ones: the letters always face the viewer, so in the water they turn. The cross-section of each letter at the water level is computed once, in the letter's own coordinates, and every frame the GPU lays it onto the mask at the current angle. Waves bounce off the glass and the letters and wrap around them, a light edge appears along the walls, and foam where the water moves fast. Cells behind the wall carry on the height of the neighbouring water — otherwise stepped marks were left on the glass;
 - besides height, the simulation stores the flow. Its velocity under each ball is read back asynchronously — eight pixels, without stalling the GPU — and the balls drift with the current, push off the walls, the letters and each other, and leave a small wake. They bob with the water height right in the shader;
 - the glass is a three.js physical material with transmission, but the wall thickness is computed from the length of the ray's path: in the middle the wall is thin and barely distorts, at the silhouette the path through the glass is long — stronger refraction and denser colour, as with thick glass. The walls hold air bubbles, and the edge has a glow — otherwise at grazing angles the wall showed dark;
 - everything inside the glass is seen only through its refraction: the water, the balls and the letters are flagged opaque but blend themselves and write colour only to the transmission buffer. The water itself is one more pass: everything behind it is drawn to a texture with depth, and the water samples it offset by the slope of the waves and absorbed by its real thickness. Letters under water waver, and sink into blue the deeper they are;

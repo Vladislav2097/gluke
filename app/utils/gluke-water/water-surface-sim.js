@@ -5,9 +5,12 @@ import { GPUComputationRenderer } from 'three/examples/jsm/misc/GPUComputationRe
  * GPU-симуляция поверхности воды (height field, линейная модель мелкой воды).
  *
  * Сетка лежит в локальном пространстве молекулы (pivot) в плоскости XZ на уровне воды.
- * Маска и поле расстояний до стенки строятся из реального сечения Sphere.006 на этом уровне;
- * буквы, пересекающие воду, вырезаются из маски как препятствия — волны отражаются от стенок
- * и от букв, огибают их и набегают на них при вращении.
+ * Маска и поле расстояний до стенки строятся из реального сечения Sphere.006 на этом уровне.
+ * Буквы, пересекающие воду, — препятствия, которые поворачиваются (буквы всегда смотрят на
+ * зрителя): сечение каждой буквы на уровне воды считается один раз в её собственном кадре
+ * (знаковое поле расстояний, атлас obstacleAtlas), а каждый кадр проход DYN_FRAG кладёт
+ * сечения с текущим поворотом поверх статической маски. Волны отражаются от стенок и букв,
+ * огибают их; шарики отталкиваются от букв так же, как от стекла.
  *
  * Состояние: r = отклонение высоты h, g = dh/dt, ba = горизонтальная скорость воды u (м/с).
  * ∂²h/∂t² = c²·∇·(∇h − f/g) − damping·∂h/∂t,  ∂u/∂t = −g∇h + f − dampU·u,
@@ -128,6 +131,45 @@ const SIM_FRAG = /* glsl */ `
   }
 `;
 
+// Маска кадра: статическая маска оболочки + сечения букв с их текущим поворотом.
+// r — вода, g — расстояние до ближайшей стенки или буквы (0..0.2 м), ba — как у статической.
+const DYN_FRAG = /* glsl */ `
+  uniform sampler2D uStaticMask;
+  uniform sampler2D uObstacleAtlas;
+  uniform vec2 uOrigin;
+  uniform vec2 uCell;
+  uniform vec4 uObstacleXf[MAX_OBSTACLES];   // центр x, z; cos ψ, sin ψ — поворот буквы вокруг Y
+  uniform vec4 uObstacleTile[MAX_OBSTACLES]; // начало сечения в кадре буквы x, z; 1/размер x, z
+  uniform vec4 uObstacleRect[MAX_OBSTACLES]; // место сечения в атласе: u0, v0, du, dv
+  uniform int uObstacleCount;
+  uniform float uObstaclePad;
+  void main() {
+    ivec2 c = ivec2(gl_FragCoord.xy);
+    vec4 m = texelFetch(uStaticMask, c, 0);
+    vec2 p = uOrigin + (vec2(c) + 0.5) * uCell;
+    float wall = m.g * 0.2;
+    float solid = 0.0;
+    for (int i = 0; i < MAX_OBSTACLES; i++) {
+      if (i >= uObstacleCount) break;
+      vec4 xf = uObstacleXf[i];
+      vec2 d = p - xf.xy;
+      vec2 q = vec2(d.x * xf.z - d.y * xf.w, d.x * xf.w + d.y * xf.z); // в кадр буквы: R(-ψ)
+      vec2 t = (q - uObstacleTile[i].xy) * uObstacleTile[i].zw;
+      if (t.x < 0.0 || t.y < 0.0 || t.x > 1.0 || t.y > 1.0) continue;
+      vec4 r = uObstacleRect[i];
+      float sdf = texture2D(uObstacleAtlas, r.xy + t * r.zw).r * SDF_RANGE - SDF_NEG;
+      float dl = sdf - uObstaclePad;
+      if (dl < 0.0) solid = 1.0;
+      wall = min(wall, max(dl, 0.0));
+    }
+    float inside = m.r * (1.0 - solid);
+    gl_FragColor = vec4(inside, inside > 0.5 ? min(wall / 0.2, 1.0) : 0.0, m.ba);
+  }
+`;
+// знаковое расстояние до сечения буквы в атласе RGBA8: от -SDF_NEG (внутри) до SDF_RANGE - SDF_NEG
+const SDF_NEG = 0.05;
+const SDF_RANGE = 0.25;
+
 // Скорость воды в точках шариков -> RGBA8 (для асинхронного чтения на CPU)
 const PROBE_FRAG = /* glsl */ `
   uniform sampler2D uState;
@@ -151,12 +193,14 @@ export class WaterSurfaceSim {
    * @param {THREE.Object3D} pivot — локальное пространство симуляции
    * @param {number} level — уровень воды в пространстве pivot
    */
-  constructor({ renderer, innerShell, obstacles = [], pivot, level, cfg, maxBalls = 8 }) {
+  constructor({ renderer, innerShell, obstacles = [], pivot, level, cfg, maxBalls = 8, maxObstacles = 4 }) {
     this.renderer = renderer;
     this.innerShell = innerShell;
     this.obstacles = obstacles;
     this.cfg = cfg;
     this.maxBalls = maxBalls;
+    this.maxObstacles = maxObstacles;
+    this.obstacleTiles = [];
     this.pivot = pivot;
     this.toPivot = new THREE.Matrix4();
     this.uniforms = {
@@ -199,6 +243,18 @@ export class WaterSurfaceSim {
     };
     this.probePending = false;
 
+    this.dynUniforms = {
+      uStaticMask: { value: null },
+      uObstacleAtlas: { value: null },
+      uOrigin: { value: this.origin },
+      uCell: { value: this.cell },
+      uObstacleXf: { value: Array.from({ length: maxObstacles }, () => new THREE.Vector4(1e3, 1e3, 1, 0)) },
+      uObstacleTile: { value: Array.from({ length: maxObstacles }, () => new THREE.Vector4()) },
+      uObstacleRect: { value: Array.from({ length: maxObstacles }, () => new THREE.Vector4()) },
+      uObstacleCount: { value: 0 },
+      uObstaclePad: { value: 0 },
+    };
+
     this.build(level);
   }
 
@@ -209,6 +265,7 @@ export class WaterSurfaceSim {
     this.pivot.updateMatrixWorld(true);
     this.toPivot.copy(this.pivot.matrixWorld).invert();
     this.buildMask(level, this.cfg.cellSize);
+    this.buildObstacles(level);
     this.gpu?.dispose();
 
     const gpu = new GPUComputationRenderer(this.nx, this.nz, this.renderer);
@@ -223,13 +280,132 @@ export class WaterSurfaceSim {
     this.gpu = gpu;
     this.variable = variable;
 
-    this.uniforms.uMask.value = this.maskTexture;
     this.uniforms.uOrigin.value.copy(this.origin);
     this.uniforms.uCell.value.copy(this.cell);
 
     this.probeMaterial?.dispose();
     this.probeMaterial = gpu.createShaderMaterial(PROBE_FRAG, this.probeUniforms);
     this.probeMaterial.defines.MAX_BALLS = this.maxBalls;
+
+    // маска кадра: её читают и симуляция, и шейдеры воды (кромка и пена у стенок и букв)
+    this.dynTarget?.dispose();
+    this.dynTarget = new THREE.WebGLRenderTarget(this.nx, this.nz, {
+      depthBuffer: false, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter,
+    });
+    this.dynMaterial?.dispose();
+    this.dynUniforms.uStaticMask.value = this.maskTexture;
+    this.dynMaterial = gpu.createShaderMaterial(DYN_FRAG, this.dynUniforms);
+    Object.assign(this.dynMaterial.defines, {
+      MAX_OBSTACLES: this.maxObstacles, SDF_NEG: SDF_NEG.toFixed(4), SDF_RANGE: SDF_RANGE.toFixed(4),
+    });
+    this.uniforms.uMask.value = this.dynTarget.texture;
+    this.syncObstacles();
+    this.renderObstacles();
+  }
+
+  // Сечения букв на уровне воды — в кадре каждой буквы (без её поворота вокруг Y), со знаковым
+  // полем расстояний. Считается при каждой перестройке уровня; поворот добавляет syncObstacles.
+  buildObstacles(level) {
+    this.obstacleAtlas?.dispose();
+    this.obstacleAtlas = null;
+    this.obstacleTiles = [];
+    const step = Math.min(this.cell.x, this.cell.y) * 0.5;
+    const pad = SDF_RANGE - SDF_NEG + step * 2;
+    const xf = new THREE.Vector4();
+    for (const mesh of this.obstacles) {
+      if (this.obstacleTiles.length >= this.maxObstacles) break;
+      mesh.updateMatrixWorld();
+      const segs = [];
+      this.sliceMesh(mesh, level, segs, null);
+      if (!segs.length) continue; // буква не доходит до воды
+      this.obstacleFrame(mesh, this.toPivot, xf);
+      const local = segs.map((sg) => {
+        const out = [];
+        for (let k = 0; k < 4; k += 2) {
+          const dx = sg[k] - xf.x;
+          const dz = sg[k + 1] - xf.y;
+          out.push(dx * xf.z - dz * xf.w, dx * xf.w + dz * xf.z);
+        }
+        return out;
+      });
+      const min = new THREE.Vector2(Infinity, Infinity);
+      const max = new THREE.Vector2(-Infinity, -Infinity);
+      for (const sg of local) {
+        min.x = Math.min(min.x, sg[0], sg[2]); max.x = Math.max(max.x, sg[0], sg[2]);
+        min.y = Math.min(min.y, sg[1], sg[3]); max.y = Math.max(max.y, sg[1], sg[3]);
+      }
+      min.subScalar(pad);
+      max.addScalar(pad);
+      const w = Math.ceil((max.x - min.x) / step) + 1;
+      const h = Math.ceil((max.y - min.y) / step) + 1;
+      // заливка чёт-нечет по узлам сетки
+      const solid = new Uint8Array(w * h);
+      const xs = [];
+      for (let j = 0; j < h; j++) {
+        const z = min.y + j * step;
+        xs.length = 0;
+        for (const sg of local) {
+          if ((sg[1] - z) * (sg[3] - z) < 0) xs.push(sg[0] + (sg[2] - sg[0]) * (z - sg[1]) / (sg[3] - sg[1]));
+        }
+        xs.sort((a, b) => a - b);
+        for (let k = 0; k + 1 < xs.length; k += 2) {
+          const i0 = Math.max(0, Math.ceil((xs[k] - min.x) / step));
+          const i1 = Math.min(w - 1, Math.floor((xs[k + 1] - min.x) / step));
+          for (let i = i0; i <= i1; i++) solid[j * w + i] = 1;
+        }
+      }
+      // знаковое расстояние: снаружи — до ближайшего узла буквы, внутри — до ближайшего снаружи
+      const dOut = chamfer(solid, w, h, 1);
+      const dIn = chamfer(solid, w, h, 0);
+      const sdf = new Float32Array(w * h);
+      for (let i = 0; i < sdf.length; i++) sdf[i] = (solid[i] ? 0.5 - dIn[i] : dOut[i] - 0.5) * step;
+      this.obstacleTiles.push({ mesh, min, step, w, h, sdf });
+    }
+    this.dynUniforms.uObstacleCount.value = this.obstacleTiles.length;
+    this.dynUniforms.uObstaclePad.value = (this.cfg.obstaclePadding ?? 0.6) * Math.min(this.cell.x, this.cell.y);
+    if (!this.obstacleTiles.length) return;
+
+    // атлас: сечения друг под другом
+    const W = Math.max(...this.obstacleTiles.map((t) => t.w));
+    const H = this.obstacleTiles.reduce((a, t) => a + t.h, 0);
+    const data = new Uint8Array(W * H * 4);
+    let y0 = 0;
+    this.obstacleTiles.forEach((t, n) => {
+      for (let j = 0; j < t.h; j++) for (let i = 0; i < t.w; i++) {
+        const v = Math.round(Math.min(1, Math.max(0, (t.sdf[j * t.w + i] + SDF_NEG) / SDF_RANGE)) * 255);
+        data[((y0 + j) * W + i) * 4] = v;
+      }
+      this.dynUniforms.uObstacleTile.value[n].set(
+        t.min.x, t.min.y, 1 / ((t.w - 1) * t.step), 1 / ((t.h - 1) * t.step));
+      this.dynUniforms.uObstacleRect.value[n].set(0.5 / W, (y0 + 0.5) / H, (t.w - 1) / W, (t.h - 1) / H);
+      y0 += t.h;
+    });
+    const tex = new THREE.DataTexture(data, W, H, THREE.RGBAFormat, THREE.UnsignedByteType);
+    tex.minFilter = tex.magFilter = THREE.LinearFilter;
+    tex.needsUpdate = true;
+    this.obstacleAtlas = tex;
+    this.dynUniforms.uObstacleAtlas.value = tex;
+  }
+
+  // Кадр буквы в пространстве молекулы: центр (x, z) и поворот вокруг Y (cos, sin)
+  obstacleFrame(mesh, toPivot, out) {
+    const e = _m.copy(toPivot).multiply(mesh.matrixWorld).elements;
+    const len = Math.hypot(e[0], e[2]) || 1;
+    return out.set(e[12], e[14], e[0] / len, -e[2] / len);
+  }
+
+  // Текущий поворот букв (вызывается каждый кадр после поворота букв к камере)
+  syncObstacles() {
+    if (!this.obstacleTiles.length) return;
+    _inv.copy(this.pivot.matrixWorld).invert();
+    this.obstacleTiles.forEach((t, n) => {
+      t.mesh.updateMatrixWorld();
+      t.xf = this.obstacleFrame(t.mesh, _inv, this.dynUniforms.uObstacleXf.value[n]);
+    });
+  }
+
+  renderObstacles() {
+    this.gpu.doRenderTarget(this.dynMaterial, this.dynTarget);
   }
 
   // сечение меша плоскостью y = level -> отрезки в локальных XZ pivot
@@ -302,22 +478,7 @@ export class WaterSurfaceSim {
 
     const inside = new Uint8Array(nx * nz);
     this.rasterize(segs, inside, 1);
-    // буквы в воде — препятствия (с запасом в одну ячейку, чтобы тонкие штрихи не «протекали»)
-    const solid = new Uint8Array(nx * nz);
-    for (const o of this.obstacles) {
-      const os = [];
-      this.sliceMesh(o, level, os, null);
-      if (os.length) this.rasterize(os, solid, 1);
-    }
-    for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) {
-      let s = 0;
-      for (let dj = -1; dj <= 1 && !s; dj++) for (let di = -1; di <= 1 && !s; di++) {
-        const x = i + di;
-        const y = j + dj;
-        if (x >= 0 && y >= 0 && x < nx && y < nz && solid[y * nx + x]) s = 1;
-      }
-      if (s) inside[j * nx + i] = 0;
-    }
+    // буквы сюда не входят: они поворачиваются и накладываются каждый кадр (buildObstacles, DYN_FRAG)
 
     // расстояние до стенки (двухпроходный chamfer 3-4), в метрах
     const INF = 1e9;
@@ -376,7 +537,35 @@ export class WaterSurfaceSim {
     const l = Math.hypot(out.nx, out.nz) || 1;
     out.nx /= l;
     out.nz /= l;
+    if (out.distance >= 0) this.obstacleAt(x, z, out);
     return out;
+  }
+
+  // буквы с их текущим поворотом: ближе стекла — расстояние и нормаль от буквы (внутри буквы — 0)
+  obstacleAt(x, z, out) {
+    const pad = this.dynUniforms.uObstaclePad.value;
+    for (const t of this.obstacleTiles) {
+      const xf = t.xf;
+      if (!xf) continue;
+      const dx = x - xf.x;
+      const dz = z - xf.y;
+      const fi = (dx * xf.z - dz * xf.w - t.min.x) / t.step;
+      const fj = (dx * xf.w + dz * xf.z - t.min.y) / t.step;
+      if (fi < 1 || fj < 1 || fi > t.w - 2 || fj > t.h - 2) continue;
+      const i = Math.round(fi);
+      const j = Math.round(fj);
+      const at = (a, b) => t.sdf[b * t.w + a];
+      const dl = at(i, j) - pad;
+      if (dl >= out.distance) continue;
+      let gx = at(i + 1, j) - at(i - 1, j);
+      let gz = at(i, j + 1) - at(i, j - 1);
+      const l = Math.hypot(gx, gz);
+      out.distance = Math.max(dl, 0);
+      if (l < 1e-6) continue; // середина штриха: направления нет — остаётся нормаль от стекла
+      gx /= l; gz /= l;
+      out.nx = gx * xf.z + gz * xf.w; // из кадра буквы обратно: R(ψ)
+      out.nz = -gx * xf.w + gz * xf.z;
+    }
   }
 
   // ближайшая к (x, z) точка воды (не у самой стенки) -> out.x, out.z; false — воды нет
@@ -441,6 +630,7 @@ export class WaterSurfaceSim {
     u.uDt.value = 1 / this.cfg.stepsPerSecond;
     const step = u.uDt.value;
     this.accumulator = Math.min(this.accumulator + dt, step * this.cfg.maxStepsPerFrame);
+    if (this.obstacleTiles.length) this.renderObstacles();
     while (this.accumulator >= step) {
       const drops = u.uDrops.value;
       for (let i = 0; i < 4; i++) {
@@ -485,6 +675,9 @@ export class WaterSurfaceSim {
   }
 
   dispose() {
+    this.dynTarget?.dispose();
+    this.dynMaterial?.dispose();
+    this.obstacleAtlas?.dispose();
     this.gpu?.dispose();
     this.maskTexture?.dispose();
     this.probeMaterial?.dispose();
@@ -492,4 +685,28 @@ export class WaterSurfaceSim {
   }
 }
 
+// Двухпроходное расстояние chamfer 3-4 (в шагах сетки) до узлов, где grid[i] === target
+function chamfer(grid, nx, nz, target) {
+  const INF = 1e9;
+  const d = new Float32Array(nx * nz);
+  for (let i = 0; i < d.length; i++) d[i] = grid[i] === target ? 0 : INF;
+  const relax = (i, j, di, dj, w) => {
+    const x = i + di;
+    const y = j + dj;
+    if (x < 0 || y < 0 || x >= nx || y >= nz) return;
+    const q = d[y * nx + x] + w;
+    if (q < d[j * nx + i]) d[j * nx + i] = q;
+  };
+  const b = Math.SQRT2;
+  for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) {
+    relax(i, j, -1, 0, 1); relax(i, j, 0, -1, 1); relax(i, j, -1, -1, b); relax(i, j, 1, -1, b);
+  }
+  for (let j = nz - 1; j >= 0; j--) for (let i = nx - 1; i >= 0; i--) {
+    relax(i, j, 1, 0, 1); relax(i, j, 0, 1, 1); relax(i, j, 1, 1, b); relax(i, j, -1, 1, b);
+  }
+  return d;
+}
+
 const _w = {};
+const _m = new THREE.Matrix4();
+const _inv = new THREE.Matrix4();
