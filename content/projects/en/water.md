@@ -112,12 +112,10 @@ demo:
     letterEmissive: '#e6f4ff'
     exposure: 1.1
     keyLight: 2.2
-    rimLight: 30
-    fillLight: 12
 metrics:
   - value: GPU
     label: waves and flow computed on the graphics card, hundreds of steps a second
-  - value: "77"
+  - value: "75"
     label: parameters you can tune right on the page
   - value: "2"
     label: water modes — with floating balls, and high water with suspended particles
@@ -150,4 +148,4 @@ The model was made in Blender for this job: outer and inner shells of 7.5 thousa
 
 ## The result
 
-The scene runs on a transparent background and drops into a page like any of our widgets: the site sets the rotation speed and the scroll response, and the model is set in the case configuration. The panel under the molecule grew out of the one the scene was tuned with: 77 live parameters, from glass thickness and water colour to viscosity, ball bounciness and cursor strength. Layers can be switched off one by one to see what the picture is made of, and a single switch raises the water into the top lobe.
+The scene runs on a transparent background and drops into a page like any of our widgets: the site sets the rotation speed and the scroll response, and the model is set in the case configuration. The panel under the molecule grew out of the one the scene was tuned with: 75 live parameters, from glass thickness and water colour to viscosity, ball bounciness and cursor strength. Layers can be switched off one by one to see what the picture is made of, and a single switch raises the water into the top lobe.

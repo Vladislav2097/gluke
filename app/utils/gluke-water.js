@@ -135,8 +135,6 @@ const DEFAULTS = {
   // --- свет ---
   exposure: 1.1,
   keyLight: 2.2,
-  rimLight: 30,
-  fillLight: 12,
 
   // --- бюджет ---
   ratioCap: 2,
@@ -397,12 +395,6 @@ const PARAMS = {
   },
   keyLight: (v, w) => {
     w.lights.key.intensity = v
-  },
-  rimLight: (v, w) => {
-    w.lights.rim.intensity = v
-  },
-  fillLight: (v, w) => {
-    w.lights.fill.intensity = v
   },
 }
 

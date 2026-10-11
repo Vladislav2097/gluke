@@ -93,6 +93,9 @@ export function createInnerGlassMaterial(p, side) {
     Object.assign(shader.uniforms, uniforms);
     shader.fragmentShader = shader.fragmentShader
       .replace('void main() {', 'uniform vec3 uRimColor;\nuniform float uRimStrength;\nuniform float uRimPower;\nvoid main() {')
+      // блики ламп внутренняя стенка не повторяет: на каждую лампу выходило по лишнему блику
+      // с ближней и с дальней стенки. Мягкие отражения окружения и кромка остаются.
+      .replace('#include <aomap_fragment>', 'reflectedLight.directSpecular = vec3(0.0);\n#include <aomap_fragment>')
       .replace(
         '#include <dithering_fragment>',
         `#include <dithering_fragment>

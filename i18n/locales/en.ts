@@ -380,8 +380,6 @@ export default {
         waterFaceTilt: 'Tilt towards the camera',
         waterExposure: 'Exposure',
         waterKeyLight: 'Key light',
-        waterRimLight: 'Rim light',
-        waterFillLight: 'Fill light',
       },
       reset: 'Reset',
       copy: 'Copy JSON',

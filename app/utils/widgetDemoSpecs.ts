@@ -732,8 +732,6 @@ export const WIDGET_DEMO_SPECS: Record<string, WidgetDemoSpec> = {
       faceTilt: 0,
       exposure: 1.1,
       keyLight: 2.2,
-      rimLight: 30,
-      fillLight: 12,
     },
     createOptions: ({ demo, narrow }) => ({
       /* Модель задаёт кейс: имена объектов внутри — в gluke-water/config.js. */
@@ -868,8 +866,6 @@ export const WIDGET_DEMO_SPECS: Record<string, WidgetDemoSpec> = {
         controls: [
           { key: 'exposure', min: 0.3, max: 2.5, step: 0.01 },
           { key: 'keyLight', min: 0, max: 6, step: 0.05 },
-          { key: 'rimLight', min: 0, max: 100, step: 1 },
-          { key: 'fillLight', min: 0, max: 60, step: 1 },
         ],
       },
     ],

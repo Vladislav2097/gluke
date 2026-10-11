@@ -380,8 +380,6 @@ export default {
         waterFaceTilt: 'Наклон к камере',
         waterExposure: 'Экспозиция',
         waterKeyLight: 'Ключевой свет',
-        waterRimLight: 'Контровой свет',
-        waterFillLight: 'Заполняющий свет',
       },
       reset: 'Сбросить',
       copy: 'Скопировать JSON',

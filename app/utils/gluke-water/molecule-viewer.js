@@ -76,7 +76,7 @@ export class MoleculeViewer {
     this.camera = new THREE.PerspectiveCamera(28, 1, 0.1, 100);
     this.lights = createLighting(this.scene);
     // свет нужен и в проходе преломления воды
-    for (const l of [this.lights.key, this.lights.rim, this.lights.fill]) l.layers.enable(REFRACTION_LAYER);
+    this.lights.key.layers.enable(REFRACTION_LAYER);
     this.backdrop = this.createTransmissionBackdrop();
     this.scene.add(this.backdrop);
 
