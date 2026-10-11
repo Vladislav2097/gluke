@@ -40,7 +40,7 @@ const DEFAULTS = {
   velResponse: 3.8, // как быстро скорость догоняет желаемую, 1/с
   accelSmoothing: 5, // сглаживание ω и α, которые уходят воде
   hoverTilt: 0.4, // параллакс камеры от курсора
-  modelScale: 1.2, // масштаб в кадре: 1 — запас исходной сцены, больше — крупнее (по высоте — с обрезкой)
+  modelScale: 1, // масштаб в кадре: 1 — крупно и без обрезки при любом повороте, больше — с обрезкой
 
   // --- слои и режим ---
   glassOn: 1,
@@ -70,14 +70,11 @@ const DEFAULTS = {
   innerRimColor: '#9fd8ff',
 
   // --- вода, вид ---
-  waterOpacity: 0.31,
   waterDepth: 0.53, // глубина до полного цвета, м
-  surfaceOpacity: 0.19,
   ripple: 0.0092, // мелкая рябь поверх симуляции, м
   dropStrength: 0.1, // сила встряхивания по щелчку
   caustics: 0.25,
   foam: 1.1,
-  wallLine: 1.55, // светлая кромка поверхности у стекла и букв
   waterLevel: -0.005, // смещение уровня от плоскости Plane, м
   refraction: 0.185, // искажение волнами (на телефоне прохода преломления нет)
   absorption: 2.2, // поглощение толщи на метр пути
@@ -114,11 +111,7 @@ const DEFAULTS = {
   ballCore: 0.17,
   ballRim: 0.33,
   ballRoughness: 0.36,
-  ballIridescence: 0.57,
   ballAbove: 1, // надводная часть рисуется поверх воды
-  waterlineSoft: 0.006, // м
-  ballDepth: 1, // под водой учитывать глубину шарика
-  underContrast: 1.6,
   ballRadius: 0.116,
   buoyancy: 0.25, // над водой, доля радиуса
   flowFollow: 0.8,
@@ -185,7 +178,11 @@ const PARAMS = {
   maxAngularAccel: anim('maxAngularAccel'),
   velResponse: anim('velResponse'),
   accelSmoothing: anim('accelSmoothing'),
-  hoverTilt: anim('hoverTilt'),
+  /* Наклон от курсора меняет диапазон углов камеры — посадку надо пересчитать. */
+  hoverTilt: (v, w) => {
+    w.cfg.animation.hoverTilt = v
+    w.fitCamera()
+  },
   modelScale: (v, w) => {
     w.modelScale = v
     w.fitCamera()
@@ -238,11 +235,12 @@ const PARAMS = {
   innerRimPower: (v, w) => inner(w).forEach((m) => {
     m.userData.uniforms.uRimPower.value = v
   }),
+  innerRoughness: (v, w) => inner(w).forEach((m) => {
+    m.roughness = v
+  }),
+  innerRimColor: (v, w) => inner(w).forEach(m => m.userData.uniforms.uRimColor.value.set(v)),
   waterDepth: (v, w) => {
     waterU(w).uDepthScale.value = v
-  },
-  surfaceOpacity: (v, w) => {
-    waterU(w).uSurfaceOpacity.value = v
   },
   ripple: (v, w) => {
     waterU(w).uRipple.value = v
@@ -255,9 +253,6 @@ const PARAMS = {
   },
   foam: (v, w) => {
     waterU(w).uFoam.value = v
-  },
-  wallLine: (v, w) => {
-    waterU(w).uWallLine.value = v
   },
   waterLevel: (v, w) => {
     if (v !== w.water.cfg.levelOffset) w.water.setLevelOffset(v)
@@ -345,14 +340,11 @@ const PARAMS = {
   ballRim: (v, w) => {
     ballU(w).uRimAlpha.value = v
   },
-  waterlineSoft: (v, w) => {
-    ballU(w).uWaterlineSoft.value = v
-  },
-  ballDepth: (v, w) => {
-    sp(w).depthUnderWater = on(v)
-  },
-  underContrast: (v, w) => {
-    ballU(w).uUnderContrast.value = v
+  ballRoughness: (v, w) => balls(w).forEach((m) => {
+    m.roughness = v
+  }),
+  ballAbove: (v, w) => {
+    ballU(w).uAboveOn.value = on(v) ? 1 : 0
   },
   ballRadius: (v, w) => {
     sp(w).radius = v

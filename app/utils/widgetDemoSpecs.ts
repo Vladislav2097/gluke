@@ -650,6 +650,10 @@ export const WIDGET_DEMO_SPECS: Record<string, WidgetDemoSpec> = {
     /* Молекула — объект в кадре, как олень: в hero растягивается на всю
        высоту правой колонки. */
     heroFill: true,
+    /* Боком одна нижняя доля идёт на камеру, а курсор и прокрутка наклоняют
+       камеру до ~47°: в 16:9 по высоте не хватало места, и молекула без
+       обрезки занимала половину ширины сцены. */
+    tallStage: true,
     defaults: {
       rotationSpeed: 0.45,
       scrollRotation: 6.52,
@@ -659,7 +663,7 @@ export const WIDGET_DEMO_SPECS: Record<string, WidgetDemoSpec> = {
       velResponse: 3.8,
       accelSmoothing: 5,
       hoverTilt: 0.4,
-      modelScale: 1.2,
+      modelScale: 1,
       glassOn: 1,
       waterOn: 1,
       ballsOn: 1,
@@ -677,14 +681,11 @@ export const WIDGET_DEMO_SPECS: Record<string, WidgetDemoSpec> = {
       innerRim: 0.12,
       innerRimPower: 3.5,
       innerRoughness: 0.11,
-      waterOpacity: 0.31,
       waterDepth: 0.53,
-      surfaceOpacity: 0.19,
       ripple: 0.0092,
       dropStrength: 0.1,
       caustics: 0.25,
       foam: 1.1,
-      wallLine: 1.55,
       waterLevel: -0.005,
       refraction: 0.185,
       absorption: 2.2,
@@ -713,11 +714,7 @@ export const WIDGET_DEMO_SPECS: Record<string, WidgetDemoSpec> = {
       ballCore: 0.17,
       ballRim: 0.33,
       ballRoughness: 0.36,
-      ballIridescence: 0.57,
       ballAbove: 1,
-      waterlineSoft: 0.006,
-      ballDepth: 1,
-      underContrast: 1.6,
       ballRadius: 0.116,
       buoyancy: 0.25,
       flowFollow: 0.8,
@@ -774,14 +771,11 @@ export const WIDGET_DEMO_SPECS: Record<string, WidgetDemoSpec> = {
         id: 'waterLook',
         controls: [
           { key: 'waterLevel', min: -0.25, max: 0.3, step: 0.005 },
-          { key: 'waterOpacity', min: 0, max: 1, step: 0.01 },
           { key: 'waterDepth', min: 0.1, max: 2, step: 0.01 },
-          { key: 'surfaceOpacity', min: 0, max: 1, step: 0.01 },
           { key: 'ripple', min: 0, max: 0.01, step: 0.0002 },
           { key: 'dropStrength', min: 0, max: 0.1, step: 0.001 },
           { key: 'caustics', min: 0, max: 0.4, step: 0.005 },
           { key: 'foam', min: 0, max: 3, step: 0.05 },
-          { key: 'wallLine', min: 0, max: 3, step: 0.05 },
           { key: 'refraction', min: 0, max: 0.5, step: 0.005 },
           { key: 'absorption', min: 0, max: 5, step: 0.05 },
         ],
@@ -834,11 +828,7 @@ export const WIDGET_DEMO_SPECS: Record<string, WidgetDemoSpec> = {
           { key: 'ballCore', min: 0, max: 1, step: 0.01 },
           { key: 'ballRim', min: 0, max: 1, step: 0.01 },
           { key: 'ballRoughness', min: 0, max: 1, step: 0.01 },
-          { key: 'ballIridescence', min: 0, max: 1, step: 0.01 },
           { key: 'ballAbove', min: 0, max: 1, step: 1 },
-          { key: 'waterlineSoft', min: 0, max: 0.05, step: 0.001 },
-          { key: 'ballDepth', min: 0, max: 1, step: 1 },
-          { key: 'underContrast', min: 0, max: 4, step: 0.05 },
         ],
       },
       {

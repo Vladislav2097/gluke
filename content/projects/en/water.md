@@ -35,7 +35,7 @@ demo:
     velResponse: 3.8
     accelSmoothing: 5
     hoverTilt: 0.4
-    modelScale: 1.2
+    modelScale: 1
     glassOn: 1
     waterOn: 1
     ballsOn: 1
@@ -57,14 +57,11 @@ demo:
     innerRimPower: 3.5
     innerRoughness: 0.11
     innerRimColor: '#9fd8ff'
-    waterOpacity: 0.31
     waterDepth: 0.53
-    surfaceOpacity: 0.19
     ripple: 0.0092
     dropStrength: 0.1
     caustics: 0.25
     foam: 1.1
-    wallLine: 1.55
     waterLevel: -0.005
     refraction: 0.185
     absorption: 2.2
@@ -95,11 +92,7 @@ demo:
     ballCore: 0.17
     ballRim: 0.33
     ballRoughness: 0.36
-    ballIridescence: 0.57
     ballAbove: 1
-    waterlineSoft: 0.006
-    ballDepth: 1
-    underContrast: 1.6
     ballRadius: 0.116
     buoyancy: 0.25
     flowFollow: 0.8
@@ -124,7 +117,7 @@ demo:
 metrics:
   - value: GPU
     label: waves and flow computed on the graphics card, hundreds of steps a second
-  - value: "84"
+  - value: "77"
     label: parameters you can tune right on the page
   - value: "2"
     label: water modes — with floating balls, and high water with suspended particles
@@ -157,4 +150,4 @@ The model was made in Blender for this job: outer and inner shells of 7.5 thousa
 
 ## The result
 
-The scene runs on a transparent background and drops into a page like any of our widgets: the site sets the rotation speed and the scroll response, and the model is set in the case configuration. The panel under the molecule grew out of the one the scene was tuned with: 84 live parameters, from glass thickness and water colour to viscosity, ball bounciness and cursor strength. Layers can be switched off one by one to see what the picture is made of, and a single switch raises the water into the top lobe.
+The scene runs on a transparent background and drops into a page like any of our widgets: the site sets the rotation speed and the scroll response, and the model is set in the case configuration. The panel under the molecule grew out of the one the scene was tuned with: 77 live parameters, from glass thickness and water colour to viscosity, ball bounciness and cursor strength. Layers can be switched off one by one to see what the picture is made of, and a single switch raises the water into the top lobe.

@@ -139,6 +139,12 @@ export class MoleculeViewer {
     this.target.set(0, box.max.y - box.min.y, 0).multiplyScalar(0.5).add(new THREE.Vector3(0, lift, 0));
     this.size = box.getSize(new THREE.Vector3());
     this.pivot.updateMatrixWorld(true);
+    // точки посадки камеры: вершины внешней оболочки относительно точки взгляда (каждая 4-я)
+    const opos = outer.geometry.attributes.position;
+    this.fitPoints = [];
+    for (let i = 0; i < opos.count; i += 4) {
+      this.fitPoints.push(new THREE.Vector3().fromBufferAttribute(opos, i).applyMatrix4(outer.matrixWorld).sub(this.target));
+    }
 
     this.shell = new MoleculeShell({ outer, inner, cfg, quality: this.quality });
     this.letters = Letters.fromMeshes({ meshes: n.letters.map((l) => findByName(model, l)), cfg: cfg.letters });
@@ -174,15 +180,57 @@ export class MoleculeViewer {
     this.fitCamera();
   }
 
-  // Посадка: молекула целиком с запасом (как в исходной полноэкранной сцене), поделённым на
-  // modelScale — в широкой сцене лаборатории запас по высоте оставлял пустые поля. Анфас молекула
-  // не шире 92% кадра при любом масштабе: в узкой колонке шапки она не упирается в края.
+  // Посадка: ближайшее расстояние, при котором молекула не выходит за FIT_LIMIT кадра ни в каком
+  // повороте и ни при каком наклоне камеры (прокрутка + курсор). Габаритная коробка тут не годится:
+  // боком одна нижняя доля идёт на камеру и в перспективе уходит ниже кадра. modelScale делит
+  // найденное расстояние: 1 — крупно и без обрезки, больше — крупнее с обрезкой в части поворотов.
   fitCamera() {
-    const t = Math.tan(THREE.MathUtils.degToRad(this.camera.fov) / 2);
-    const sx = (this.size?.x ?? 6) * 0.5 / t / this.camera.aspect;
-    const sy = (this.size?.y ?? 4.4) * 0.5 / t;
-    this.distance = Math.max(Math.max(sy * 1.35, sx * 1.25) / this.modelScale, sx * 1.087);
     this.camera.updateProjectionMatrix();
+    if (!this.fitPoints) {
+      const t = Math.tan(THREE.MathUtils.degToRad(this.camera.fov) / 2);
+      this.distance = Math.max(4.4 * 0.675 / t, 6 * 0.625 / t / this.camera.aspect);
+      return;
+    }
+    const tan = Math.tan(THREE.MathUtils.degToRad(this.camera.fov) / 2);
+    const aspect = this.camera.aspect;
+    const tilt = this.cfg.animation.hoverTilt;
+    // перебор поворотов нужен только при смене пропорций или наклона; масштаб лишь делит результат
+    const key = `${aspect.toFixed(4)}|${tilt}`;
+    if (this.fitKey === key) {
+      this.distance = this.fitDistance / this.modelScale;
+      return;
+    }
+    const elevs = [];
+    for (let k = 0; k <= 4; k++) elevs.push(THREE.MathUtils.lerp(0.12 - tilt, 0.42 + tilt, k / 4));
+    const turns = [];
+    for (let k = 0; k < FIT_TURNS; k++) turns.push([Math.cos(k * 2 * Math.PI / FIT_TURNS), Math.sin(k * 2 * Math.PI / FIT_TURNS)]);
+    const fits = (d) => {
+      for (const e of elevs) {
+        const ce = Math.cos(e);
+        const se = Math.sin(e);
+        for (const [c, s] of turns) {
+          for (const p of this.fitPoints) {
+            const x = p.x * c + p.z * s; // поворот молекулы вокруг Y
+            const z = -p.x * s + p.z * c;
+            const depth = d - (p.y * se + z * ce);
+            if (depth <= 0) return false;
+            if (Math.abs(x) / (depth * tan * aspect) > FIT_LIMIT) return false;
+            if (Math.abs(p.y * ce - z * se) / (depth * tan) > FIT_LIMIT) return false;
+          }
+        }
+      }
+      return true;
+    };
+    let lo = 1;
+    let hi = 200;
+    for (let i = 0; i < 20; i++) {
+      const mid = (lo + hi) / 2;
+      if (fits(mid)) hi = mid;
+      else lo = mid;
+    }
+    this.fitKey = key;
+    this.fitDistance = hi;
+    this.distance = hi / this.modelScale;
   }
 
   onPointerMove(e) {
@@ -375,6 +423,8 @@ export class MoleculeViewer {
   }
 }
 
+const FIT_LIMIT = 0.94; // доля полукадра, за которую молекула не выходит при modelScale = 1
+const FIT_TURNS = 24; // сколько поворотов молекулы проверяет посадка
 const _plane = new THREE.Plane();
 const CURSOR_RAY_DEPTH = 2.5; // м — насколько вглубь молекулы искать воду вдоль луча
 const CURSOR_RAY_STEP = 0.04;
