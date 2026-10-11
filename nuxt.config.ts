@@ -166,6 +166,15 @@ export default defineNuxtConfig({
         styles: ['normal'],
         subsets: ['latin', 'cyrillic'],
       },
+      /* Шрифт карточки первого экрана с энергией (кейс energy-hero) — по
+         макету сцены. Файлы качаются только там, где он используется. */
+      {
+        name: 'Inter',
+        provider: 'google',
+        weights: [400, 500],
+        styles: ['normal'],
+        subsets: ['latin', 'cyrillic'],
+      },
     ],
   },
   i18n: {

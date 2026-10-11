@@ -1,0 +1,153 @@
+/* Карточка первого экрана — та же вёрстка, что у исходного виджета
+   (src/widget/hastra-hero.css), с двумя отличиями. Размер задаёт обвязка
+   сайта: она вписывает карточку в сцену кейса и сама ставит `--u` (1 px
+   макета) и режим (`--mobile`), а не контейнерный запрос по ширине блока —
+   сцена кейса бывает и шире, и уже, чем блок на чужом сайте. И вместо
+   знака и надписи клиента — знак «g» и надпись GLUKE.
+   Desktop — макет 1200×493, mobile — 320×620. */
+
+.gluke-hero {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+  /* Это картинка, а не интерфейс: подписи и кнопка не выделяются
+     и не перехватывают прокрутку на тач-экране. */
+  user-select: none;
+}
+
+.gluke-hero *,
+.gluke-hero *::before,
+.gluke-hero *::after {
+  box-sizing: border-box;
+}
+
+.gluke-hero__card {
+  --u: 1px;
+  position: relative;
+  flex: none;
+  border-radius: calc(40 * var(--u));
+  background: #1B2339;
+  color: #fff;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.gluke-hero__title {
+  position: absolute;
+  left: calc(52 * var(--u));
+  top: calc(81 * var(--u));
+  margin: 0;
+  font-size: calc(30 * var(--u));
+  font-weight: 400;
+  line-height: calc(36 * var(--u));
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  color: #fff;
+  z-index: 1;
+}
+
+.gluke-hero__accent {
+  display: block;
+  font-size: calc(48 * var(--u));
+  line-height: calc(50 * var(--u));
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: #F4DE3C;
+}
+
+.gluke-hero__text {
+  position: absolute;
+  left: calc(52 * var(--u));
+  top: calc(236 * var(--u));
+  margin: 0;
+  font-size: calc(15 * var(--u));
+  font-weight: 400;
+  line-height: calc(24 * var(--u));
+  white-space: nowrap;
+  color: #fff;
+  z-index: 1;
+}
+
+/* Цвет кнопки во время анимации ведёт движок (inline-стили): тёмная →
+   жёлтая заливка волной. Здесь только стартовый тёмный цвет. */
+.gluke-hero__cta {
+  position: absolute;
+  left: calc(52 * var(--u));
+  top: calc(349 * var(--u));
+  width: calc(190 * var(--u));
+  height: calc(56 * var(--u));
+  border-radius: calc(28 * var(--u));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #2C3658;
+  color: #8A93B2;
+  font-size: calc(16 * var(--u));
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  z-index: 1;
+}
+
+/* Надпись GLUKE под знаком: 783×249.6 в исходном SVG. */
+.gluke-hero__wordmark {
+  position: absolute;
+  left: calc(826.1 * var(--u));
+  top: calc(395 * var(--u));
+  width: calc(87.8 * var(--u));
+  height: calc(28 * var(--u));
+  z-index: 1;
+}
+
+.gluke-hero__br { display: inline; }
+
+/* ---------- mobile ---------- */
+.gluke-hero--mobile .gluke-hero__card {
+  border-radius: calc(32 * var(--u));
+}
+
+.gluke-hero--mobile .gluke-hero__title {
+  left: calc(28 * var(--u));
+  top: calc(30 * var(--u));
+  width: calc(264 * var(--u));
+  font-size: calc(24 * var(--u));
+  line-height: calc(29 * var(--u));
+  white-space: normal;
+}
+
+.gluke-hero--mobile .gluke-hero__accent {
+  font-size: calc(23 * var(--u));
+  line-height: calc(29 * var(--u));
+  letter-spacing: 0;
+}
+
+.gluke-hero--mobile .gluke-hero__text {
+  left: calc(28 * var(--u));
+  top: calc(170 * var(--u));
+  width: calc(264 * var(--u));
+  font-size: calc(14 * var(--u));
+  line-height: calc(22 * var(--u));
+  white-space: normal;
+}
+
+.gluke-hero--mobile .gluke-hero__cta {
+  left: calc(28 * var(--u));
+  top: calc(332 * var(--u));
+  width: calc(174 * var(--u));
+  height: calc(46 * var(--u));
+  border-radius: calc(23 * var(--u));
+  font-size: calc(15 * var(--u));
+}
+
+/* Знак 130 px с центром в (148, 485), низ — 550. */
+.gluke-hero--mobile .gluke-hero__wordmark {
+  left: calc(122.9 * var(--u));
+  top: calc(557 * var(--u));
+  width: calc(50.2 * var(--u));
+  height: calc(16 * var(--u));
+}
+
+.gluke-hero--mobile .gluke-hero__br { display: none; }

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import constellationSource from './constellation.js?raw'
 import energyFillSource from './gluke-energy-fill.js?raw'
+import energyHeroSource from './gluke-energy-hero.js?raw'
 import imageParticlesSource from './gluke-image-particles.js?raw'
 import metaballsSource from './gluke-metaballs.js?raw'
 import particlesSource from './gluke-particles.js?raw'
@@ -168,6 +169,7 @@ const ENGINES = [
   { file: 'gluke-image-particles.js', source: imageParticlesSource },
   { file: 'gluke-particles.js', source: particlesSource },
   { file: 'gluke-water.js', source: waterSource },
+  { file: 'gluke-energy-hero.js', source: energyHeroSource },
 ]
 
 describe('подключение движков к сторожу', () => {

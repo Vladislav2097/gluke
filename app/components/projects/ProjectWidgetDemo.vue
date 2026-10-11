@@ -294,7 +294,13 @@ defineExpose({ failed })
          высоту своей половины вместо 16:9-карточки. */
       { 'widget-demo--hero-fill': props.variant === 'hero' && spec?.heroFill },
       { 'widget-demo--tall': props.variant === 'tunable' && spec?.tallStage },
+      /* Карточка со своими пропорциями (первый экран с энергией): сцена
+         повторяет их и в шапке, и в лаборатории. */
+      { 'widget-demo--aspect': props.variant !== 'bleed' && spec?.stageAspect },
     ]"
+    :style="props.variant !== 'bleed' && spec?.stageAspect
+      ? { '--stage-aspect-wide': spec.stageAspect.wide, '--stage-aspect-narrow': spec.stageAspect.narrow }
+      : undefined"
   >
     <div
       ref="stageEl"
@@ -439,6 +445,26 @@ defineExpose({ failed })
    «отпрыгивает» к своей посадке в живой сцене. Фон у обложек — фон сайта. */
 .widget-demo--tall .widget-demo__poster {
   object-fit: contain;
+}
+
+/* Сцена в пропорциях карточки виджета. Обложка снята с широкой карточки
+   с полями сверху и снизу (16:9 для списков и превью ссылок), в широкой
+   сцене поля уходят за обрез — и карточка на обложке совпадает с живой.
+   В узкой сцене обложка вписывается целиком, пока не ожила mobile-карточка. */
+.widget-demo--aspect .widget-demo__stage {
+  width: 100%;
+  aspect-ratio: var(--stage-aspect-wide);
+}
+
+@media (max-width: 767.98px) {
+  .widget-demo--aspect .widget-demo__stage {
+    aspect-ratio: var(--stage-aspect-narrow);
+    max-height: calc(100svh - 128px);
+  }
+
+  .widget-demo--aspect .widget-demo__poster {
+    object-fit: contain;
+  }
 }
 
 /* Полноэкранный bleed-режим: виджет заполняет весь верх страницы фоном,

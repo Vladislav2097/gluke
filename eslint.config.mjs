@@ -9,6 +9,8 @@ export default withNuxt(
     /* То же для сцены молекулы с водой: модули перенесены из отдельного
        проекта сцены и сверяются с ним — оформление остаётся исходным. Обвязка
        сайта (`gluke-water.js`) правилами проекта проверяется. */
-    ignores: ['app/utils/gluke-pyramid.js', 'app/utils/gluke-water/**'],
+    /* И для первого экрана с энергией (`gluke-energy-hero/`): сцена из
+       отдельного проекта, сверяется с ним; обвязка — `gluke-energy-hero.js`. */
+    ignores: ['app/utils/gluke-pyramid.js', 'app/utils/gluke-water/**', 'app/utils/gluke-energy-hero/**'],
   },
 )
