@@ -13,7 +13,6 @@ export class MoleculeShell {
       ...cfg.glassOuter,
       dispersion: quality.dispersion ? cfg.glassOuter.dispersion : 0,
     });
-    outer.castShadow = true;
     outer.renderOrder = 10;
 
     // внутренняя поверхность рисуется двумя слоями: дальняя стенка до воды, ближняя — после

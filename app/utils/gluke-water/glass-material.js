@@ -3,10 +3,9 @@ import * as THREE from 'three';
 /**
  * Внешнее стекло (Sphere.002): transmission + premultiplied-вывод,
  * чтобы на прозрачном фоне страницы блики оставались яркими, а пустое стекло — прозрачным.
- *
- * Толщина для преломления/поглощения считается по длине пути луча в стенке:
- * wallThickness / |cos(угол к нормали)|. В центре стенка тонкая и почти не искажает,
- * у силуэта путь в стекле длинный — сильное преломление и более плотный цвет, как у толстого стекла.
+ * Толщина стенки постоянная; у силуэта — френелевская кромка и свечение края.
+ * (Утолщение по длине пути луча из исходной сцены не работало — подмена строки внутри
+ * <transmission_fragment> в onBeforeCompile не находит её, — и убрано.)
  */
 export function createOuterGlassMaterial(p) {
   const mat = new THREE.MeshPhysicalMaterial({
@@ -21,7 +20,6 @@ export function createOuterGlassMaterial(p) {
     attenuationDistance: p.attenuationDistance,
     clearcoat: p.clearcoat,
     clearcoatRoughness: p.clearcoatRoughness,
-    envMapIntensity: p.envMapIntensity,
     specularIntensity: p.specularIntensity,
     side: THREE.FrontSide,
   });
@@ -33,7 +31,6 @@ export function createOuterGlassMaterial(p) {
 
   const uniforms = {
     uRimAlpha: { value: p.rimAlpha },
-    uMaxPath: { value: p.maxPathFactor },
     uEdgeColor: { value: new THREE.Color(p.edgeColor) },
     uEdgeStrength: { value: p.edgeStrength },
     uEdgePower: { value: p.edgePower },
@@ -43,18 +40,10 @@ export function createOuterGlassMaterial(p) {
     Object.assign(shader.uniforms, uniforms);
     shader.fragmentShader = shader.fragmentShader
       .replace('void main() {', `uniform float uRimAlpha;
-        uniform float uMaxPath;
         uniform vec3 uEdgeColor;
         uniform float uEdgeStrength;
         uniform float uEdgePower;
         void main() {`)
-      // Не срабатывает (и не срабатывала в исходной сцене): в onBeforeCompile фрагмент
-      // <transmission_fragment> ещё не раскрыт, строки в коде нет — толщина стенки постоянная.
-      .replace(
-        'material.thickness = thickness;',
-        `float wallCos = abs(dot(normalize(cameraPosition - vWorldPosition), transformNormalByInverseViewMatrix(normal, viewMatrix)));
-        material.thickness = thickness * min(1.0 / max(wallCos, 1e-3), uMaxPath);`,
-      )
       .replace(
         '#include <dithering_fragment>',
         `#include <dithering_fragment>
@@ -79,7 +68,6 @@ export function createInnerGlassMaterial(p, side) {
     roughness: p.roughness,
     metalness: 0,
     opacity: p.opacity,
-    envMapIntensity: p.envMapIntensity,
     clearcoat: 0,
     side,
   });

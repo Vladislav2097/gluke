@@ -27,7 +27,6 @@ export function createSphereMaterials(p, waterUniforms) {
       color: p.color,
       roughness: p.roughness,
       metalness: 0,
-      envMapIntensity: p.envMapIntensity,
       clearcoat: 1,
       clearcoatRoughness: 0.08,
       iridescence: p.iridescence,

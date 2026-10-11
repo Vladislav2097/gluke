@@ -40,7 +40,7 @@ The average project budget starts from €500. Smaller standalone tasks are quot
 
 **Can I order an interactive 3D model for my website?** Yes, we prepare an optimized GLB and integrate it into a product page or catalogue with a WebGL viewer.
 
-## Case studies (29)
+## Case studies (30)
 
 Figures below are the ones published on each case page.
 
@@ -73,6 +73,7 @@ Figures below are the ones published on each case page.
 - [Web graphics](https://gluke.ru/projects/image-particles): A portrait in particles — an interactive field in WebGL. ~21K particles in frame — donor pixels with the empty background dropped; 0 libraries — a single gl.POINTS draw call; 2D effect — particles from an image, not a 3D scene. 2026.
 - [Web graphics](https://gluke.ru/projects/energy-fill): Filling a logo with energy — an engine in WebGL. 3 s the whole scene — beam, fill, pulse; 0 libraries — a single fragment shader; 1 file the logo is swapped as an SVG, nothing is baked ahead of time. 2026.
 - [RP Grand](https://gluke.ru/projects/rp-grand): Vehicle assets for a mobile open-world game — interactive 3D model. 9k triangles — full build at LOD0; 3×3×3 bumper, skirt and spoiler variants; LOD0/1/2 three levels of detail for draw distance. 2026.
+- [Web graphics](https://gluke.ru/projects/water): A molecule with water — glass and GPU water simulation in three.js. GPU waves and flow computed on the graphics card, hundreds of steps a second; 75 parameters you can tune right on the page; 2 water modes — with floating balls, and high water with suspended particles. 2026.
 
 ## Knowledge base (17)
 

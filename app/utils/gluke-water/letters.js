@@ -31,7 +31,6 @@ export class Letters {
       // внутри стекла: видны через его преломление и подкрашиваются водой, а не рисуются поверх
       makeInterior(mesh, 1.5);
       mesh.layers.enable(REFRACTION_LAYER); // видны сквозь воду с преломлением
-      mesh.castShadow = true;
       centerPivot(mesh);
     }
     material.depthWrite = true;

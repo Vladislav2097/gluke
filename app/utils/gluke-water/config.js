@@ -1,4 +1,5 @@
-// Все настраиваемые параметры сцены. Значения подобраны визуально для демо (этап 2).
+// Все настраиваемые параметры сцены. Силы отражений (envMapIntensity) здесь нет: при общем
+// окружении сцены three.js берёт scene.environmentIntensity и настройку материала игнорирует.
 // Часть из них переписывают плоские параметры виджета (gluke-water.js, DEFAULTS) —
 // то, что выведено в лабораторию кейса; остальное живёт здесь.
 const SIMULATION_CONFIG = {
@@ -12,7 +13,6 @@ const SIMULATION_CONFIG = {
       simCellSize: 0.024, // м; ~240×75 ячеек
       stepsPerSecond: 120,
       transmissionScale: 0.6, // разрешение буфера преломления стекла
-      shadowMapSize: 512,
       dispersion: false,
       bubbleFactor: 0.5,
     },
@@ -23,7 +23,6 @@ const SIMULATION_CONFIG = {
       simCellSize: 0.018,
       stepsPerSecond: 180,
       transmissionScale: 0.8,
-      shadowMapSize: 1024,
       dispersion: false,
       bubbleFactor: 0.75,
     },
@@ -34,7 +33,6 @@ const SIMULATION_CONFIG = {
       simCellSize: 0.012, // ~480×145 ячеек
       stepsPerSecond: 240,
       transmissionScale: 1,
-      shadowMapSize: 2048,
       dispersion: true,
       bubbleFactor: 1,
     },
@@ -67,13 +65,11 @@ const SIMULATION_CONFIG = {
     roughness: 0.055, // подобрано в исходной панели; ползунок убран — портил картинку
     ior: 1.5,
     thickness: 0.13, // реальная толщина стенки (Sphere.002 − Sphere.006)
-    maxPathFactor: 4, // предел удлинения пути луча у силуэта
     dispersion: 0.25,
     attenuationColor: '#7cc8ff',
     attenuationDistance: 2.4, // подобрано в исходной панели
     clearcoat: 1,
     clearcoatRoughness: 0.03,
-    envMapIntensity: 1.6,
     specularIntensity: 1,
     rimAlpha: 0.25,
     edgeColor: '#7fc4f5', // свечение края толстой стенки (убирает тёмные края на скользящих углах)
@@ -85,7 +81,6 @@ const SIMULATION_CONFIG = {
   glassInner: {
     opacity: 0.05,
     roughness: 0.18, // размывает отражения софтбоксов во вогнутой стенке
-    envMapIntensity: 0.3,
     rimColor: '#9fd8ff',
     rimStrength: 0.35,
     rimPower: 4,
@@ -97,7 +92,6 @@ const SIMULATION_CONFIG = {
   spheres: {
     color: '#0d2a40', // слабый диффуз: шарик виден по бликам и кромке
     roughness: 0.12,
-    envMapIntensity: 1.2,
     iridescence: 0.57, // подобрано в исходной панели; ползунок убран — почти не виден
     coreAlpha: 0.06,
     rimAlpha: 0.55,
@@ -125,11 +119,6 @@ const SIMULATION_CONFIG = {
     roughness: 0.45,
     clearcoat: 0.15,
     metalness: 0,
-    height: 0.62,
-    depth: 0.085, // ~14% высоты
-    bevel: 0.014,
-    z: 0, // центр по глубине трубки
-    showTrianglePlaceholders: false,
     faceCamera: true, // буквы всегда повёрнуты к зрителю
     faceTilt: 0, // 0 — только вокруг вертикали, 1 — ещё и наклон к камере по высоте
   },
