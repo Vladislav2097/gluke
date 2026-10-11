@@ -5,6 +5,7 @@ import imageParticlesSource from './gluke-image-particles.js?raw'
 import metaballsSource from './gluke-metaballs.js?raw'
 import particlesSource from './gluke-particles.js?raw'
 import pyramidSource from './gluke-pyramid.js?raw'
+import waterSource from './gluke-water.js?raw'
 import { attachRunSources, createRunGate } from './widgetRunGate'
 
 /* Источники подменяются через опции: в node-окружении ни document, ни
@@ -166,6 +167,7 @@ const ENGINES = [
   { file: 'constellation.js', source: constellationSource },
   { file: 'gluke-image-particles.js', source: imageParticlesSource },
   { file: 'gluke-particles.js', source: particlesSource },
+  { file: 'gluke-water.js', source: waterSource },
 ]
 
 describe('подключение движков к сторожу', () => {

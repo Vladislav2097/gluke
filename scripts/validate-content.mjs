@@ -211,6 +211,7 @@ const SHOWCASE = {
     'particles',
     'metaballs',
     'image-particles',
+    'water',
   ],
 }
 

@@ -1,0 +1,112 @@
+import * as THREE from 'three';
+import { makeInterior } from './scene-utils.js';
+import { REFRACTION_LAYER } from './preview-water.js';
+
+function createLetterMaterial(p) {
+  return new THREE.MeshPhysicalMaterial({
+    color: p.color,
+    emissive: p.emissive,
+    emissiveIntensity: p.emissiveIntensity,
+    roughness: p.roughness,
+    metalness: p.metalness,
+    clearcoat: p.clearcoat,
+    clearcoatRoughness: 0.35,
+  });
+}
+
+/**
+ * Буквы: смоделированы в GLB (Letter_A, Letter_C, Letter_G), здесь им назначается материал,
+ * центр вращения и невидимый коллайдер для воды. Заменить буквы — значит заменить их меши
+ * в модели (имена берутся из config.names.letters); режим «высокая вода» отсчитывает уровень
+ * от низа одной из них (config.water.high.levelMesh).
+ */
+export class Letters {
+  // Буквы уже смоделированы в GLB (Молекула.blend): только назначаем материал
+  static fromMeshes({ meshes, cfg }) {
+    const material = createLetterMaterial(cfg);
+    const found = meshes.filter(Boolean);
+    const colliders = [];
+    for (const mesh of found) {
+      mesh.material = material;
+      // внутри стекла: видны через его преломление и подкрашиваются водой, а не рисуются поверх
+      makeInterior(mesh, 1.5);
+      mesh.layers.enable(REFRACTION_LAYER); // видны сквозь воду с преломлением
+      mesh.castShadow = true;
+      centerPivot(mesh);
+      colliders.push(createCollider(mesh, cfg));
+    }
+    material.depthWrite = true;
+    return new Letters(found, colliders, material, cfg);
+  }
+
+  constructor(meshes, colliders, material, cfg) {
+    this.meshes = meshes;
+    this.colliders = colliders; // невидимые неподвижные препятствия для воды
+    this.material = material;
+    this.cfg = cfg;
+    this.rest = meshes.map((m) => m.quaternion.clone());
+  }
+
+  // Поворот букв лицом к камере: вокруг вертикали (+ наклон по высоте, faceTilt 0..1).
+  // В покое буква смотрит вдоль +Z родителя — туда, где камера при нулевом повороте молекулы.
+  faceCamera(camera) {
+    const { faceCamera, faceTilt } = this.cfg;
+    this.meshes.forEach((mesh, i) => {
+      if (!faceCamera) {
+        mesh.quaternion.copy(this.rest[i]);
+        return;
+      }
+      mesh.parent.worldToLocal(_cam.copy(camera.position)).sub(mesh.position);
+      const yaw = Math.atan2(_cam.x, _cam.z);
+      const pitch = -Math.atan2(_cam.y, Math.hypot(_cam.x, _cam.z)) * faceTilt;
+      _euler.set(pitch, yaw, 0, 'YXZ');
+      mesh.quaternion.setFromEuler(_euler).multiply(this.rest[i]);
+    });
+  }
+
+  set visible(v) {
+    for (const m of this.meshes) m.visible = v;
+  }
+}
+
+// Переносит центр вращения буквы в центр её габарита (по X/Z), чтобы она вращалась на месте
+function centerPivot(mesh) {
+  const geo = mesh.geometry;
+  geo.computeBoundingBox();
+  const c = geo.boundingBox.getCenter(new THREE.Vector3());
+  c.y = 0;
+  geo.translate(-c.x, 0, -c.z);
+  geo.computeBoundingBox();
+  geo.computeBoundingSphere();
+  mesh.position.add(c.multiply(mesh.scale).applyQuaternion(mesh.quaternion));
+}
+
+// Невидимый статичный коллайдер: вертикальный цилиндр, описывающий букву при любом повороте
+// (collider: 'cylinder'), либо коробка по габариту буквы в исходном положении ('box')
+function createCollider(mesh, cfg) {
+  const geo = mesh.geometry;
+  const box = geo.boundingBox;
+  const size = box.getSize(new THREE.Vector3());
+  const pad = cfg.colliderPadding;
+  let cgeo;
+  if (cfg.collider === 'box') {
+    cgeo = new THREE.BoxGeometry(size.x + pad * 2, size.y, size.z + pad * 2);
+  } else {
+    const pos = geo.attributes.position;
+    let r = 0;
+    for (let i = 0; i < pos.count; i++) r = Math.max(r, Math.hypot(pos.getX(i), pos.getZ(i)));
+    cgeo = new THREE.CylinderGeometry(r + pad, r + pad, size.y, 32);
+  }
+  cgeo.translate(0, (box.min.y + box.max.y) / 2, 0);
+  const collider = new THREE.Mesh(cgeo, new THREE.MeshBasicMaterial());
+  collider.name = `${mesh.name}_collider`;
+  collider.visible = false;
+  collider.position.copy(mesh.position);
+  collider.quaternion.copy(mesh.quaternion);
+  collider.scale.copy(mesh.scale);
+  mesh.parent.add(collider);
+  return collider;
+}
+
+const _cam = new THREE.Vector3();
+const _euler = new THREE.Euler();
