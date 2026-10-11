@@ -48,6 +48,8 @@ export function createOuterGlassMaterial(p) {
         uniform float uEdgeStrength;
         uniform float uEdgePower;
         void main() {`)
+      // Не срабатывает (и не срабатывала в исходной сцене): в onBeforeCompile фрагмент
+      // <transmission_fragment> ещё не раскрыт, строки в коде нет — толщина стенки постоянная.
       .replace(
         'material.thickness = thickness;',
         `float wallCos = abs(dot(normalize(cameraPosition - vWorldPosition), transformNormalByInverseViewMatrix(normal, viewMatrix)));

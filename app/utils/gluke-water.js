@@ -40,28 +40,23 @@ const DEFAULTS = {
   velResponse: 3.8, // как быстро скорость догоняет желаемую, 1/с
   accelSmoothing: 5, // сглаживание ω и α, которые уходят воде
   hoverTilt: 0.4, // параллакс камеры от курсора
+  modelScale: 1.2, // масштаб в кадре: 1 — запас исходной сцены, больше — крупнее (по высоте — с обрезкой)
 
   // --- слои и режим ---
   glassOn: 1,
   waterOn: 1,
   ballsOn: 1,
   lettersOn: 1,
-  shadowOn: 0, // тень на невидимом полу; на фоне сайта по умолчанию выключена
   highWater: 0, // 1 — высокая вода до нижней кромки буквы O, без шариков, со взвесью
 
   // --- стекло, внешняя стенка ---
   glassThickness: 0.145,
-  glassMaxPath: 6, // предел удлинения пути луча у силуэта
   glassIor: 1.46,
   glassDispersion: 0.52, // на телефоне и планшете выключена пресетом качества
-  glassRoughness: 0.055,
-  glassTransmission: 1,
-  glassReflections: 1,
   glassClearcoat: 0.48,
   glassRim: 0.19,
   glassEdge: 0.41, // свечение края толстой стенки
   glassEdgePower: 3.2,
-  glassTintDistance: 2.4,
   glassBody: 0.055, // плотность «тела» стекла в буфере преломления
   glassBubbles: 0.73, // пузырьки воздуха в толще стекла
   glassColor: '#d5e5f0',
@@ -71,7 +66,6 @@ const DEFAULTS = {
   // --- стекло, внутренняя стенка ---
   innerRim: 0.12,
   innerRimPower: 3.5,
-  innerReflections: 0.29,
   innerRoughness: 0.11,
   innerRimColor: '#9fd8ff',
 
@@ -119,7 +113,6 @@ const DEFAULTS = {
   // --- шарики ---
   ballCore: 0.17,
   ballRim: 0.33,
-  ballReflections: 1.1,
   ballRoughness: 0.36,
   ballIridescence: 0.57,
   ballAbove: 1, // надводная часть рисуется поверх воды
@@ -141,8 +134,6 @@ const DEFAULTS = {
 
   // --- буквы ---
   letterGlow: 0.12,
-  letterRoughness: 0.45,
-  letterClearcoat: 0.15,
   faceCamera: 1, // буквы всегда повёрнуты к зрителю
   faceTilt: 0,
   letterColor: '#f4faff',
@@ -153,7 +144,6 @@ const DEFAULTS = {
   keyLight: 2.2,
   rimLight: 30,
   fillLight: 12,
-  shadowOpacity: 0.22,
 
   // --- бюджет ---
   ratioCap: 2,
@@ -196,6 +186,10 @@ const PARAMS = {
   velResponse: anim('velResponse'),
   accelSmoothing: anim('accelSmoothing'),
   hoverTilt: anim('hoverTilt'),
+  modelScale: (v, w) => {
+    w.modelScale = v
+    w.fitCamera()
+  },
 
   glassOn: (v, w) => w.shell.setGlassVisible(on(v)),
   waterOn: (v, w) => {
@@ -205,34 +199,16 @@ const PARAMS = {
   lettersOn: (v, w) => {
     w.letters.visible = on(v)
   },
-  /* Выключенная тень не должна считать карту теней каждый кадр: свет
-     перестаёт её отбрасывать (один раз пересоберутся шейдеры). */
-  shadowOn: (v, w) => {
-    w.lights.catcher.visible = on(v)
-    w.lights.key.castShadow = on(v)
-  },
   highWater: (v, w) => w.setWaterMode(on(v) ? 'high' : 'level'),
 
   glassThickness: (v, w) => {
     glass(w).thickness = v
-  },
-  glassMaxPath: (v, w) => {
-    glassU(w).uMaxPath.value = v
   },
   glassIor: (v, w) => {
     glass(w).ior = v
   },
   glassDispersion: (v, w) => {
     glass(w).dispersion = w.quality.dispersion ? v : 0
-  },
-  glassRoughness: (v, w) => {
-    glass(w).roughness = v
-  },
-  glassTransmission: (v, w) => {
-    glass(w).transmission = v
-  },
-  glassReflections: (v, w) => {
-    glass(w).envMapIntensity = v
   },
   glassClearcoat: (v, w) => {
     glass(w).clearcoat = v
@@ -245,9 +221,6 @@ const PARAMS = {
   },
   glassEdgePower: (v, w) => {
     glassU(w).uEdgePower.value = v
-  },
-  glassTintDistance: (v, w) => {
-    glass(w).attenuationDistance = v
   },
   glassBody: (v, w) => {
     w.backdrop.material.uniforms.uColor.value.w = v
@@ -265,17 +238,6 @@ const PARAMS = {
   innerRimPower: (v, w) => inner(w).forEach((m) => {
     m.userData.uniforms.uRimPower.value = v
   }),
-  innerReflections: (v, w) => inner(w).forEach((m) => {
-    m.envMapIntensity = v
-  }),
-  innerRoughness: (v, w) => inner(w).forEach((m) => {
-    m.roughness = v
-  }),
-  innerRimColor: (v, w) => inner(w).forEach(m => m.userData.uniforms.uRimColor.value.set(v)),
-
-  waterOpacity: (v, w) => {
-    waterU(w).uOpacity.value = v
-  },
   waterDepth: (v, w) => {
     waterU(w).uDepthScale.value = v
   },
@@ -383,18 +345,6 @@ const PARAMS = {
   ballRim: (v, w) => {
     ballU(w).uRimAlpha.value = v
   },
-  ballReflections: (v, w) => balls(w).forEach((m) => {
-    m.envMapIntensity = v
-  }),
-  ballRoughness: (v, w) => balls(w).forEach((m) => {
-    m.roughness = v
-  }),
-  ballIridescence: (v, w) => balls(w).forEach((m) => {
-    m.iridescence = v
-  }),
-  ballAbove: (v, w) => {
-    ballU(w).uAboveOn.value = on(v) ? 1 : 0
-  },
   waterlineSoft: (v, w) => {
     ballU(w).uWaterlineSoft.value = v
   },
@@ -441,12 +391,6 @@ const PARAMS = {
   letterGlow: (v, w) => {
     letter(w).emissiveIntensity = v
   },
-  letterRoughness: (v, w) => {
-    letter(w).roughness = v
-  },
-  letterClearcoat: (v, w) => {
-    letter(w).clearcoat = v
-  },
   faceCamera: (v, w) => {
     w.cfg.letters.faceCamera = on(v)
   },
@@ -467,9 +411,6 @@ const PARAMS = {
   },
   fillLight: (v, w) => {
     w.lights.fill.intensity = v
-  },
-  shadowOpacity: (v, w) => {
-    w.lights.catcher.material.opacity = v
   },
 }
 
@@ -501,6 +442,7 @@ class Widget {
       pixelBudget: this.o.pixelBudget,
       waterMode: on(this.o.highWater) ? 'high' : 'level',
       rotationSpeed: this.o.rotationSpeed,
+      modelScale: this.o.modelScale,
     })
     /* Уровни — до загрузки: сетка симуляции сразу строится на нужной высоте,
        а не перестраивается вторым проходом после первого применения. */

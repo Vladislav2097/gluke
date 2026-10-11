@@ -64,13 +64,13 @@ const SIMULATION_CONFIG = {
   glassOuter: {
     color: '#eaf6ff',
     transmission: 1,
-    roughness: 0.04,
+    roughness: 0.055, // подобрано в исходной панели; ползунок убран — портил картинку
     ior: 1.5,
     thickness: 0.13, // реальная толщина стенки (Sphere.002 − Sphere.006)
     maxPathFactor: 4, // предел удлинения пути луча у силуэта
     dispersion: 0.25,
     attenuationColor: '#7cc8ff',
-    attenuationDistance: 1.2,
+    attenuationDistance: 2.4, // подобрано в исходной панели
     clearcoat: 1,
     clearcoatRoughness: 0.03,
     envMapIntensity: 1.6,
@@ -196,9 +196,6 @@ const SIMULATION_CONFIG = {
     maxSize: 0.014,
   },
 
-  shadow: {
-    opacity: 0.22,
-  },
 };
 
 // Каждому экземпляру — своя копия: на странице кейса живут два виджета (шапка

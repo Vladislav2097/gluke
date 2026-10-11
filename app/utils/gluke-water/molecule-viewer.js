@@ -35,6 +35,7 @@ export class MoleculeViewer {
     this.pixelBudget = options.pixelBudget ?? Infinity;
     this.rotationSpeed = options.rotationSpeed ?? this.cfg.animation.rotationSpeed;
     this.maxFps = options.maxFps ?? this.cfg.animation.maxFps;
+    this.modelScale = options.modelScale ?? 1;
     this.vsyncMs = 0;
     this.vsyncPrev = null;
     this.vsyncCount = 0;
@@ -66,8 +67,6 @@ export class MoleculeViewer {
     renderer.setClearColor(0x000000, 0);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.1;
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.VSMShadowMap;
     renderer.domElement.style.cssText = 'display:block;width:100%;height:100%';
     container.appendChild(renderer.domElement);
     this.renderer = renderer;
@@ -75,8 +74,7 @@ export class MoleculeViewer {
     this.scene = new THREE.Scene();
     this.scene.environment = createEnvironment(renderer);
     this.camera = new THREE.PerspectiveCamera(28, 1, 0.1, 100);
-    this.lights = createLighting(this.scene, this.cfg);
-    this.lights.key.shadow.mapSize.set(q.shadowMapSize, q.shadowMapSize);
+    this.lights = createLighting(this.scene);
     // свет нужен и в проходе преломления воды
     for (const l of [this.lights.key, this.lights.rim, this.lights.fill]) l.layers.enable(REFRACTION_LAYER);
     this.backdrop = this.createTransmissionBackdrop();
@@ -173,10 +171,17 @@ export class MoleculeViewer {
     this.renderer.setPixelRatio(ratio);
     this.renderer.setSize(w, h, false);
     this.camera.aspect = w / h;
-    const vFov = THREE.MathUtils.degToRad(this.camera.fov);
-    const fitH = (this.size?.y ?? 4.4) * 0.5 * 1.35 / Math.tan(vFov / 2);
-    const fitW = (this.size?.x ?? 6) * 0.5 * 1.25 / Math.tan(vFov / 2) / this.camera.aspect;
-    this.distance = Math.max(fitH, fitW);
+    this.fitCamera();
+  }
+
+  // Посадка: молекула целиком с запасом (как в исходной полноэкранной сцене), поделённым на
+  // modelScale — в широкой сцене лаборатории запас по высоте оставлял пустые поля. Анфас молекула
+  // не шире 92% кадра при любом масштабе: в узкой колонке шапки она не упирается в края.
+  fitCamera() {
+    const t = Math.tan(THREE.MathUtils.degToRad(this.camera.fov) / 2);
+    const sx = (this.size?.x ?? 6) * 0.5 / t / this.camera.aspect;
+    const sy = (this.size?.y ?? 4.4) * 0.5 / t;
+    this.distance = Math.max(Math.max(sy * 1.35, sx * 1.25) / this.modelScale, sx * 1.087);
     this.camera.updateProjectionMatrix();
   }
 

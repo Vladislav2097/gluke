@@ -35,24 +35,19 @@ demo:
     velResponse: 3.8
     accelSmoothing: 5
     hoverTilt: 0.4
+    modelScale: 1.2
     glassOn: 1
     waterOn: 1
     ballsOn: 1
     lettersOn: 1
-    shadowOn: 0
     highWater: 0
     glassThickness: 0.145
-    glassMaxPath: 6
     glassIor: 1.46
     glassDispersion: 0.52
-    glassRoughness: 0.055
-    glassTransmission: 1
-    glassReflections: 1
     glassClearcoat: 0.48
     glassRim: 0.19
     glassEdge: 0.41
     glassEdgePower: 3.2
-    glassTintDistance: 2.4
     glassBody: 0.055
     glassBubbles: 0.73
     glassColor: '#d5e5f0'
@@ -60,7 +55,6 @@ demo:
     glassEdgeColor: '#a1c4de'
     innerRim: 0.12
     innerRimPower: 3.5
-    innerReflections: 0.29
     innerRoughness: 0.11
     innerRimColor: '#9fd8ff'
     waterOpacity: 0.31
@@ -100,7 +94,6 @@ demo:
     flowDamping: 0.6
     ballCore: 0.17
     ballRim: 0.33
-    ballReflections: 1.1
     ballRoughness: 0.36
     ballIridescence: 0.57
     ballAbove: 1
@@ -120,8 +113,6 @@ demo:
     ballColor: '#36414a'
     ballRimColor: '#5dbff8'
     letterGlow: 0.12
-    letterRoughness: 0.45
-    letterClearcoat: 0.15
     faceCamera: 1
     faceTilt: 0
     letterColor: '#f4faff'
@@ -130,11 +121,10 @@ demo:
     keyLight: 2.2
     rimLight: 30
     fillLight: 12
-    shadowOpacity: 0.22
 metrics:
   - value: GPU
     label: волны и течение считаются на видеокарте, сотни шагов в секунду
-  - value: "94"
+  - value: "84"
     label: параметра, которые крутятся прямо на странице
   - value: "2"
     label: режима воды — с шариками и высокая, со взвесью
@@ -167,4 +157,4 @@ media: []
 
 ## Результат
 
-Сцена работает на прозрачном фоне и встраивается в страницу как любой наш виджет: скорость вращения и реакцию на прокрутку задаёт сайт, модель подставляется настройкой кейса. Панель под молекулой — та же, по которой подбиралась сцена: 94 живых параметра, от толщины стекла и цвета воды до вязкости, упругости шариков и силы курсора. Слои можно выключать по одному и посмотреть, из чего собрана картинка, а один переключатель поднимает воду до верхней доли.
+Сцена работает на прозрачном фоне и встраивается в страницу как любой наш виджет: скорость вращения и реакцию на прокрутку задаёт сайт, модель подставляется настройкой кейса. Панель под молекулой выросла из той, по которой подбиралась сцена: 84 живых параметра, от толщины стекла и цвета воды до вязкости, упругости шариков и силы курсора. Слои можно выключать по одному и посмотреть, из чего собрана картинка, а один переключатель поднимает воду до верхней доли.
