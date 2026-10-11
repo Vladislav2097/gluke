@@ -131,3 +131,18 @@ export const ENERGY_FILL_THEME_LOOK: Record<'dark' | 'light', WidgetThemeLook> =
     rim: 0.5,
   },
 }
+
+/* Молекула с водой: в тёмной теме буквы белые, как в исходной сцене; в светлой
+   белые буквы теряются на светлом стекле — они становятся фирменным фиолетовым
+   (`--color-brand-500`). Свечение того же цвета, иначе белый emissive
+   разбеливает фиолетовый. */
+export const WATER_THEME_LOOK: Record<'dark' | 'light', WidgetThemeLook> = {
+  dark: {
+    letterColor: '#f4faff',
+    letterEmissive: '#e6f4ff',
+  },
+  light: {
+    letterColor: '#714b9d',
+    letterEmissive: '#714b9d',
+  },
+}

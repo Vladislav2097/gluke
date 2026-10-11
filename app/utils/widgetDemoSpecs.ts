@@ -22,6 +22,7 @@ import {
   METABALLS_THEME_LOOK,
   PARTICLES_THEME_LOOK,
   PYRAMID_THEME_LOOK,
+  WATER_THEME_LOOK,
 } from '~/utils/widgetThemeLook'
 
 export type WidgetParams = Record<string, unknown>
@@ -654,6 +655,7 @@ export const WIDGET_DEMO_SPECS: Record<string, WidgetDemoSpec> = {
        камеру до ~47°: в 16:9 по высоте не хватало места, и молекула без
        обрезки занимала половину ширины сцены. */
     tallStage: true,
+    themeLook: light => WATER_THEME_LOOK[light ? 'light' : 'dark'],
     defaults: {
       rotationSpeed: 0.45,
       scrollRotation: 6.52,
