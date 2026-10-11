@@ -20,6 +20,14 @@
  * Каждый плоский параметр — одно поле вложенного конфига (`PATHS`); поля,
  * у которых desktop и mobile расходятся (координаты, размеры в px макета),
  * в лабораторию не вынесены — их значение у каждой сцены своё.
+ *
+ * Второй режим — «страница» (первый экран главной): разметку с заголовком,
+ * текстом и кнопкой-ссылкой даёт сама страница (`card` и `cta` в опциях),
+ * а кадр не вписывает карточку макета, а растягивается на весь блок. Раскладка
+ * макета (`PAGE_LAYOUT`) стоит в нём по центру: опорный кадр шире или выше
+ * макета ровно настолько, насколько пропорции блока отличаются от него, —
+ * поэтому масштаб по осям одинаковый, и HTML страницы, расставленный по той
+ * же формуле, совпадает с координатами движка.
  */
 
 import { attachRunSources, createRunGate } from './widgetRunGate'
@@ -39,6 +47,23 @@ const MODES = {
 const DESKTOP_ASPECT = 1
 const START_VISIBLE = 0.35 // какая доля карточки должна быть видна для старта
 const FINAL_HOLD = 2 // сек после конца сцены — кадр для «сразу финал»
+
+/* Раскладка первого экрана главной в координатах макета (1200×493 и 320×620).
+   Знак «g» уже треугольника клиента, а тексты сайта длиннее, поэтому слова
+   стоят ближе к знаку, левые — короткие. Порядок слов тот же, что в
+   `copyWords`: верх слева, верх справа, середина слева, середина справа. */
+const PAGE_LAYOUT = {
+  desktop: {
+    logo: { x: 900, y: 240, size: 330 },
+    items: [[640, 116], [1040, 110], [610, 262], [1040, 262]],
+    lane: [600, 410],
+  },
+  mobile: {
+    logo: { x: 160, y: 500, size: 140 },
+    items: [[14, 440], [176, 410], [14, 515], [222, 500]],
+    lane: [160, 380],
+  },
+}
 
 const PATHS = {
   timeSpeed: 'timing.speed',
@@ -198,6 +223,8 @@ const DEFAULTS = {
   copyText: 'Делаем интернет маркетинг двигателем вашего бизнеса.\nПревращаем рекламный бюджет в инструмент роста\nи масштабирования бизнеса, а не статью расходов',
   copyCta: 'Обсудить проект',
   copyWords: 'ЛИДЫ|ОКУПАЕМОСТЬ|РОСТ|ПРОДАЖИ',
+  /** Шрифт слов на канвасе; пусто — как в макете (Inter). */
+  wordsFont: '',
 
   /* Время: стоп-кадр и протяжка. Живьём фронт заливки и импульс идут по
      сотне миллисекунд — без остановки их не настроить. */
@@ -264,8 +291,18 @@ class Widget {
     this.frozen = this.o.respectReducedMotion
       && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-    this.buildDom()
-    host.appendChild(this.root)
+    /* Режим страницы: разметку держит страница, обвязка её не создаёт
+       и не снимает. */
+    this.page = !!this.o.card
+    if (this.page) {
+      this.root = null
+      this.card = this.o.card
+      this.cta = this.o.cta || null
+    }
+    else {
+      this.buildDom()
+      host.appendChild(this.root)
+    }
     host.__glukeEnergyHero = this
 
     this.ro = new ResizeObserver(() => this.onResize())
@@ -307,6 +344,7 @@ class Widget {
   }
 
   renderCopy() {
+    if (this.page) return
     const q = s => this.root.querySelector(s)
     q('.gluke-hero__accent').textContent = this.o.copyAccent
     fillLines(q('.gluke-hero__title-rest'), this.o.copyTitle)
@@ -327,6 +365,16 @@ class Widget {
     const w = this.el.clientWidth
     const h = this.el.clientHeight
     const k = Math.max(0.01, Math.min(w / m.width, h / m.height))
+    if (this.page) {
+      /* Опорный кадр — макет, расширенный до пропорций блока; сдвиг
+         ставит раскладку макета в его центр. HTML страницы стоит по той же
+         формуле в CSS (контейнерные единицы), поэтому здесь ничего не
+         пишется в стили. */
+      const fw = w / k
+      const fh = h / k
+      this.frame = { w: fw, h: fh, dx: (fw - m.width) / 2, dy: (fh - m.height) / 2 }
+      return
+    }
     this.card.style.width = (m.width * k) + 'px'
     this.card.style.height = (m.height * k) + 'px'
     this.card.style.setProperty('--u', k + 'px')
@@ -343,18 +391,47 @@ class Widget {
       cfg.timing.speed = 1
       cfg.timing.loop = false
     }
+    if (this.o.wordsFont) cfg.words.fontFamily = this.o.wordsFont
     const words = String(this.o.copyWords).split('|')
     cfg.words.items.forEach((item, i) => {
       if (words[i] !== undefined) item.text = words[i].trim()
     })
     cfg.render.ratioCap = this.o.ratioCap
     cfg.render.pixelBudget = this.o.pixelBudget
+    if (this.page) this.placeOnPage(cfg)
     return cfg
+  }
+
+  /* Раскладка главной: знак, слова и дорожка потока — из PAGE_LAYOUT,
+     сдвинутые в центр опорного кадра. */
+  placeOnPage(cfg) {
+    const L = PAGE_LAYOUT[this.modeName]
+    const { w, h, dx, dy } = this.frame
+    cfg.ref = { width: w, height: h }
+    cfg.logo.x = L.logo.x + dx
+    cfg.logo.y = L.logo.y + dy
+    cfg.logo.size = L.logo.size
+    cfg.words.items.forEach((item, i) => {
+      item.x = L.items[i][0] + dx
+      item.y = L.items[i][1] + dy
+    })
+    cfg.stream.laneX = L.lane[0] + dx
+    cfg.stream.laneY = L.lane[1] + dy
+  }
+
+  /* Свежий конфиг в тот же объект: движок держит на него ссылку. */
+  refreshConfig() {
+    const fresh = this.config()
+    for (const k of Object.keys(fresh)) this.cfg[k] = fresh[k]
+    this.engine.configChanged()
+    this.engine.resize()
+    if (!this.engine.playing) this.engine.seek(this.engine.time)
   }
 
   build() {
     this.modeName = this.mode()
-    this.root.classList.toggle('gluke-hero--mobile', this.modeName === 'mobile')
+    if (this.root) this.root.classList.toggle('gluke-hero--mobile', this.modeName === 'mobile')
+    else this.card.dataset.mode = this.modeName
     this.fit()
     this.cfg = this.config()
     this.started = false
@@ -374,7 +451,7 @@ class Widget {
     const engine = this.engine
     this.engine = null
     engine.destroy()
-    for (const p of ['background-color', 'background-image', 'color']) this.cta.style.removeProperty(p)
+    if (this.cta) for (const p of ['background-color', 'background-image', 'color']) this.cta.style.removeProperty(p)
   }
 
   /* Доля карточки в окне: старт — когда её видно хотя бы на треть, как на
@@ -430,6 +507,8 @@ class Widget {
       return
     }
     this.fit()
+    /* На странице раскладка движка зависит от пропорций блока. */
+    if (this.page) this.refreshConfig()
   }
 
   set(patch) {
@@ -444,15 +523,7 @@ class Widget {
     if (!keys.length) return this
 
     if (keys.some(k => COPY_KEYS.includes(k))) this.renderCopy()
-    if (this.engine && keys.some(k => PATHS[k] || k === 'copyWords')) {
-      /* Движок держит ссылку на объект конфига — переносим значения в него,
-         а не подменяем объект. */
-      const fresh = this.config()
-      for (const k of Object.keys(fresh)) this.cfg[k] = fresh[k]
-      this.engine.configChanged()
-      this.engine.resize()
-      if (!this.engine.playing) this.engine.seek(this.engine.time)
-    }
+    if (this.engine && keys.some(k => PATHS[k] || k === 'copyWords' || k === 'wordsFont')) this.refreshConfig()
     if (keys.includes('timeFreeze') || keys.includes('timeMoment')) this.applyTime()
     return this
   }
@@ -498,13 +569,13 @@ class Widget {
     /* Снятый виджет обязан отписать источники: иначе слушатель вкладки
        переживёт свой канвас и снова запустит цикл. */
     this.unbindRunSources()
-    this.root.remove()
+    if (this.root) this.root.remove()
     if (this.el.__glukeEnergyHero === this) delete this.el.__glukeEnergyHero
   }
 
   reattach(el) {
     this.el = el
-    el.appendChild(this.root)
+    if (this.root) el.appendChild(this.root)
     el.__glukeEnergyHero = this
     if (this.ro) this.ro.observe(el)
     this.bindRunSources()
