@@ -1,8 +1,8 @@
 ---
 locale: en
 slug: energy-fill
-title: Filling a logo with energy — an engine in WebGL
-description: 'A beam of light enters the mark and spreads through the shape from inside: the front travels by geodesic distance within the outline, not as a circular wipe. One fragment shader, no dependencies, the logo is swapped as a file.'
+title: An energy hero — a first-screen animation in WebGL
+description: 'Energy is born inside the mark and fills it along its shape, a pulse spreads across the block as a wave and lights up the words, and they fly into the button like comets and fill it with yellow. The copy and the button are plain HTML; the light and particles are WebGL on top. Every phase and timing is tunable right on the page.'
 client: Web graphics
 industry: Widgets
 categories:
@@ -14,76 +14,173 @@ featured: false
 status: published
 navigation: false
 period: "2026"
-updated: 2026-09-21
-engagement: active
+updated: 2026-10-11
+engagement: completed
 services:
-  - Fragment shader that fills along the shape
-  - Distance maps baked from the logo mask
-  - A "beam — fill — pulse" scene
-  - Parameter lab
+  - A first-screen animation in WebGL
+  - A shape-aware mark fill and a wave across the block
+  - Desktop and phone scenes from two mockups
+  - A lab of phases and timings
 demo:
-  widget: energy-fill
-  alt: A triangular mark with a beam of light entering it and spreading through the shape from inside
-  logo: /media/projects/energy-fill/mark.svg
+  widget: energy-hero
+  alt: A dark first-screen card — a headline and a yellow button on the left, the letter g filled with yellow energy on the right, with words around it
+  logo: /media/projects/pyramid/g-mark.svg
   tunable: true
   params:
-    markPick: 0
-    markAlt: /media/projects/pyramid/g-mark.svg
-    detail: 2
-    markSize: 0.99
-    markShift: 0
-    markFit: 0
-    entryAngle: 30
-    beamReach: 1.1
-    beamWidth: 0.05
-    beamNoise: 0.8
-    beamGlow: 1.6
-    frontWidth: 0.06
-    frontGlow: 1.4
-    fillNoise: 0.16
-    noiseScale: 7
-    frontFlow: 0.5
-    grain: 0.22
-    grainScale: 14
-    grainSteps: 7
-    idle: 0.55
-    idleShape: 1.3
-    idleSpeed: 0.15
-    idleTight: 5
-    rim: 0.9
-    rimWidth: 0.14
-    halo: 1
-    haloWidth: 0.15
-    soft: 0.55
-    softWidth: 0.29
-    bloom: 0.5
-    bloomWidth: 1.28
-    shock: 1.45
-    shockWidth: 0.22
-    burst: 0
-    burstScale: 3.5
-    burstSpeed: 0.5
-    hue: 0.147
-    saturation: 0.91
-    dormant: 0.3
-    charge: 0.7
-    fillTime: 1
-    flash: 0.35
-    hold: 1.4
-    ambient: 3
-    loop: 1
-    freeze: 0
-    scrub: 0.37
+    staticLogo: /media/projects/energy-fill/g-static.svg
+    wordmark: /media/brand/gluke-logo-white.svg
+    copyAccent: Digital marketing
+    copyTitle: "that brings a business\nmeasurable results"
+    copyText: "We make online marketing the engine of your business.\nWe turn the ad budget into a tool for growth\nand scaling, not a line of expenses"
+    copyCta: Discuss a project
+    copyWords: LEADS|PAYBACK|GAIN|SALES
+    timeSpeed: 1
+    timeLoop: 1
+    timeLoopPause: 3
+    phaseIntroOffset: 0
+    phaseIntroDuration: 0.4
+    phaseIgniteOffset: 0
+    phaseIgniteDuration: 1.5
+    phaseChargeOffset: 0
+    phaseChargeDuration: 0.8
+    phasePulseOffset: 0
+    phasePulseDuration: 0.5
+    phaseFormOffset: -0.45
+    phaseFormDuration: 1.15
+    phaseHoldOffset: 0
+    phaseHoldDuration: 0.8
+    phaseCollectOffset: 0
+    phaseCollectDuration: 0.25
+    phaseStreamOffset: 0
+    phaseStreamDuration: 0.5
+    phaseCtaImpactOffset: 0
+    phaseCtaImpactDuration: 0.35
+    phaseDissolveOffset: 0
+    phaseDissolveDuration: 0.9
+    logoRotation: 0
+    logoDetail: 1
+    logoFillShare: 0.85
+    logoEmber: 1.1
+    logoEmberSize: 0.045
+    logoFrontWidth: 0.06
+    logoFrontGlow: 1.4
+    logoFillNoise: 0.1
+    logoNoiseScale: 7
+    logoFrontFlow: 0.5
+    logoGrain: 0.12
+    logoGrainScale: 14
+    logoGrainSteps: 7
+    logoDormant: 0.55
+    logoIdle: 0.12
+    logoIdleShape: 1.3
+    logoIdleSpeed: 0.15
+    logoIdleTight: 5
+    logoRim: 0
+    logoRimWidth: 0.14
+    logoHalo: 0.35
+    logoHaloWidth: 0.3
+    logoSoft: 0.55
+    logoSoftWidth: 0.29
+    logoBloom: 0.2
+    logoBloomWidth: 0.24
+    logoBurst: 0
+    logoBurstScale: 3.5
+    logoBurstSpeed: 0.5
+    logoChargeGlow: 0.7
+    logoChargeRipple: 0.35
+    logoChargeRippleSpeed: 0.6
+    logoDistortion: 0.012
+    logoFxExtent: 2.2
+    pulseStrength: 1
+    pulseFlash: 1.1
+    pulseFlashDecay: 0.09
+    pulseGlow: 1.15
+    pulseDistortion: 0.03
+    pulseAfterGlow: 0.55
+    pulseWaveIntensity: 1.35
+    pulseWaveNoise: 0
+    pulseWaveFade: 0.5
+    pulseWaveDecel: 2.4
+    pulseWaveReach: 1.15
+    pulseParticleIntensity: 0.9
+    revealFrontWidth: 12
+    revealFlare: 1.8
+    revealGlintLife: 0.35
+    revealGlintIntensity: 1.2
+    revealIntensity: 1
+    revealGlow: 1
+    revealTextScale: 1
+    revealOpacity: 1
+    revealRandomness: 0.5
+    holdFloating: 1
+    holdSpeed: 1
+    holdGlow: 0.7
+    holdPulse: 0.25
+    holdFinalGlow: 0.12
+    wordsKeep: 0
+    wordsDimStart: 0
+    markerRingOpacity: 0.2
+    markerDotGlow: 0.6
+    streamConvergence: 0.85
+    streamStagger: 0.06
+    streamTravelScale: 0.7
+    streamDissolveFrom: 0.12
+    streamDissolveTo: 0.72
+    streamDissolveSoft: 0.07
+    streamMarkerDissolve: 0.35
+    streamMarkerParticles: 40
+    streamCloudLength: 0.1
+    streamCloudAhead: 0.35
+    streamCloudLoosen: 3
+    streamIntensity: 1.7
+    streamGlow: 1
+    streamTrail: 0.09
+    streamComet: 1.3
+    streamCometTrail: 0.08
+    streamParticleSize: 1.6
+    streamArrivalSpread: 0.35
+    streamDistortion: 0.5
+    streamBehindLogo: 1
+    ctaInitialBrightness: 0
+    ctaYellow: 1
+    ctaGlow: 1
+    ctaHalo: 1
+    ctaImpact: 1.5
+    ctaFlash: 1.4
+    ctaRing: 1.3
+    ctaAnticipation: 0.35
+    ctaFinalGlow: 0.45
+    ctaEnergy: 0.35
+    ctaEnergySpeed: 0.35
+    ctaEnergyScale: 1
+    ctaFillGlow: 0.9
+    ctaFillHalo: 0.6
+    idleLogoOff: 1
+    idleLogoFadeOut: 0.8
+    idleLogoStaticBody: 0.9
+    idleLogoGlow: 0.45
+    idleLogoPulseInterval: 3.6
+    idleLogoPulseIntensity: 0.35
+    idleLogoPulseWidth: 0.45
+    idleCtaGlow: 0.45
+    idleCtaHalo: 0.8
+    idleCtaLight: 0.22
+    idleCtaInner: 0.2
+    idleCtaBlink: 0.35
+    idleCtaBlinkInterval: 2.2
+    idleCtaBlinkWidth: 0.12
+    timeFreeze: 0
+    timeMoment: 3
 metrics:
-  - value: 3 s
-    label: the whole scene — beam, fill, pulse
+  - value: "10"
+    label: phases on the timeline — from the birth of the energy to the final frame
+  - value: "2"
+    label: scenes — desktop and phone, each from its own mockup
   - value: "0"
-    label: libraries — a single fragment shader
-  - value: 1 file
-    label: the logo is swapped as an SVG, nothing is baked ahead of time
+    label: libraries — WebGL1 and a single script
 cover:
   src: /media/projects/energy-fill/energy-fill-cover.jpg
-  alt: A triangular mark filled with the brand yellow, glowing against a dark background
+  alt: A dark first-screen card — a headline and the yellow Discuss a project button on the left, a yellow letter g with a soft glow and the GLUKE wordmark on the right
   width: 1680
   height: 945
 media: []
@@ -91,11 +188,22 @@ media: []
 
 ## The task
 
-A first pass at the engine. The mark on stage is a placeholder: a triangle with a triangle cut out of its centre. The ring is deliberate — it shows at once whether the fill is honest: a circular wipe would light a far corner before its neighbour, while a wave travelling through the shape goes around the ring. The real logo drops in as a single file.
+The first screen of a digital agency's website. The mockup was static: a dark card with a headline, a subheading and a Discuss a project button on the left, and a mark with four words around it on the right: leads, payback, growth, sales. The job was to turn it into a short scene that tells in a few seconds what the headline says: the energy of advertising gathers in the mark, spreads across the business as results and leads to action — to the button.
+
+The constraints are those of any first screen: the copy stays real text (search engines and screen readers read it), the button stays a real button, the animation plays once and does not get in the way of reading, and without WebGL or with reduced motion the block shows the final frame straight away. And two scenes: a desktop one from a 1200×493 mockup and a phone one from a 320×620 mockup, where the mark sits under the button and the stream of words runs upwards.
+
+In this version the client's mark is replaced with ours — the letter g: the engine bakes its fill maps from any SVG, so the mark is swapped by a file.
 
 ## The work
 
-- the fill front follows the geodesic distance inside the outline: the arrival map is baked from the logo mask in the browser on load, and in a frame it costs one texture sample;
-- the same texture holds the mark coverage, the distance to the edge from inside and the distance to the mark from outside — that gives the rim and the halo with no second pass and no blur into a separate buffer;
-- the beam, the fill and the pulse are one timeline; the lab loops it, a site header would play it once;
-- the panel below exposes the same parameters as the widget config. "Freeze frame" and "Moment in the scene" stop time so the front can be inspected: live it passes in a fraction of a second.
+- the scene is ten phases on a timeline: start, ignition, charge, pulse, wave with the words, hold, gather, stream, button impact and dissolve. The phases run in a chain, each with a duration and an offset from the end of the previous one; a negative offset makes them overlap. Every frame is a function of time, so the scene can be stopped at any moment and scrubbed back and forth;
+- the energy is born in a hot core inside the mark and fills it along its shape: the front follows the geodesic distance inside the outline rather than a circular wipe. A worker bakes the maps from the mark's mask. The fill was first worked out as a separate engine on a placeholder — a triangle with a triangle cut out of it: on a ring it is obvious at once whether the front really follows the shape — and it went into the scene in a square around the mark, with rotation, charging and a colour for the dormant mark;
+- the pulse is a single ring from the mark across the whole block, decelerating, with sparks on its front. Each word lights up exactly when the front reaches it: the letters flare, glints run over them, and the markers to the left of the words light a yellow dot;
+- the words break loose and fly to the button like comets along a curved lane — behind the mark rather than across it. On the way they dissolve into a cloud of particles that lags and loosens, and the markers scatter into sparks;
+- the button is an HTML element. The wave fills it with a yellow circle centred on the mark — the same radius as the front on the canvas, so the fill edge on the button matches the light around it. Before the fill, energy shimmers inside; after the impact a halo and an occasional blink remain;
+- at the end the live mark dissolves into the static copy from the mockup with its soft yellow shadow — the frame after the animation matches the mockup;
+- the site build is a single script with no dependencies plus a stylesheet: the scene starts when at least a third of the block is visible and the tab is active; crossing the 960 px width swaps the scene, and the animation is not shown a second time.
+
+## The result
+
+The animation lives on top of ordinary markup and does not touch it: the headline, copy and button stay HTML, while a transparent canvas draws the light, the wave and the particles. Below is the lab the scene was put together in: all ten phases with offset and duration, speed, loop, freeze frame and Scene moment, which stops the scene at any fraction of a second — and over a hundred parameters of the fill, the wave, the words, the stream and the button.

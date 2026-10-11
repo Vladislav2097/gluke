@@ -212,7 +212,6 @@ const SHOWCASE = {
     'metaballs',
     'image-particles',
     'water',
-    'energy-hero',
   ],
 }
 
