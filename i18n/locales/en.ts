@@ -579,6 +579,7 @@ export default {
           'cow': 'Cow print',
           'tie-dye': 'Tie-dye',
           'memphis': 'Memphis',
+          'uv-checker': 'UV checker',
         },
         coverages: {
           gloss: 'Gloss',

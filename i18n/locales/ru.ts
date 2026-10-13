@@ -579,6 +579,7 @@ export default {
           'cow': 'Корова',
           'tie-dye': 'Тай-дай',
           'memphis': 'Мемфис',
+          'uv-checker': 'UV-сетка',
         },
         coverages: {
           gloss: 'Краска',

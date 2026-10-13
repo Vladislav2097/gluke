@@ -83,6 +83,7 @@ const LOCAL = [
   { id: 'tropical', source: 'tropical-floral-bright-seamless-pattern.webp', use: 'Печать «Тропика»' },
   { id: 'morris', source: 'william-morris-sage-gold-seamless-pattern.webp', use: 'Печать «Моррис»' },
   { id: 'chrysanthemum', source: '3.jpg', use: 'Печать «Хризантемы»' },
+  { id: 'uv-checker', source: 'uv-checker.jpg', use: 'Печать «UV-сетка» — проверка развёртки' },
 ].map(pattern => ({
   ...pattern,
   asset: 'seamless tile',

@@ -127,12 +127,14 @@ describe('палитра, узоры и покрытия', () => {
     expect(resolveColor('none').hex).toBe('#ffffff')
   })
 
-  it('множитель масштаба узора ходит от 0.5 до 2, и шаг ползунка попадает в обе границы и в 1', () => {
-    expect(PATTERN_SCALE_MIN).toBe(0.5)
+  it('множитель масштаба узора ходит от 0.15 до 2, и шаг ползунка попадает в обе границы, в 0.5 и в 1', () => {
+    expect(PATTERN_SCALE_MIN).toBe(0.15)
     expect(PATTERN_SCALE_MAX).toBe(2)
+    /* Шаг дробный: деление даёт целое с хвостом в последнем разряде. */
     const steps = (value: number) => (value - PATTERN_SCALE_MIN) / PATTERN_SCALE_STEP
-    expect(Number.isInteger(steps(PATTERN_SCALE_MAX))).toBe(true)
-    expect(Number.isInteger(steps(1))).toBe(true)
+    for (const value of [PATTERN_SCALE_MAX, 1, 0.5]) {
+      expect(steps(value)).toBeCloseTo(Math.round(steps(value)), 9)
+    }
   })
 
   it('множитель делает рисунок крупнее, а не плотнее', () => {

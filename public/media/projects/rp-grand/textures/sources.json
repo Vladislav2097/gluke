@@ -185,6 +185,21 @@
         "color": 172634,
         "thumb": 4586
       }
+    },
+    {
+      "id": "uv-checker",
+      "asset": "seamless tile",
+      "use": "Печать «UV-сетка» — проверка развёртки",
+      "source": "D:/Work/Clients/GAME_ART/RP Grand/Новая папка/uv-checker.jpg",
+      "license": "© RP Grand — материал заказчика",
+      "maps": [
+        "color",
+        "thumb"
+      ],
+      "bytes": {
+        "color": 69846,
+        "thumb": 3478
+      }
     }
   ]
 }

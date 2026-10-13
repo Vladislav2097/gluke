@@ -121,16 +121,22 @@ export const CAR_PATTERNS: readonly CarPattern[] = [
   { id: 'cow', tile: 'cow', repeat: 0.42, tint: 0.5 },
   { id: 'tie-dye', tile: 'tie-dye', repeat: 0.32, tint: 0.5 },
   { id: 'memphis', tile: 'memphis', repeat: 0.6, tint: 0.5 },
+  /* Проверочная сетка развёртки: ровно один тайл на UV (1 / UV_REPEAT_PER_METER),
+     клетки A1…H8 показывают раскладку островов как есть. Чистые цвета
+     колонок — с цветом «без цвета», как у любой печати. */
+  { id: 'uv-checker', tile: 'uv-checker', repeat: 0.125, tint: 0.5 },
 ]
 
 /*
  * Множитель масштаба узора — отдельная настройка поверх выбранного узора: 1 —
  * тайл ложится как в файле, 0.5 — вдвое мельче, 2 — вдвое крупнее. Границы и
- * шаг — это и есть ползунок в панели: он защёлкивается на точки шага.
+ * шаг — это и есть ползунок в панели: он защёлкивается на точки шага. Низ —
+ * 0.15: проверочной UV-сетке нужна клетка мельче детали, иначе по ней не
+ * видно ни растяжений, ни плотности текселей.
  */
-export const PATTERN_SCALE_MIN = 0.5
+export const PATTERN_SCALE_MIN = 0.15
 export const PATTERN_SCALE_MAX = 2
-export const PATTERN_SCALE_STEP = 0.25
+export const PATTERN_SCALE_STEP = 0.05
 
 export function patternScale(scale: number | undefined): number {
   if (typeof scale !== 'number' || !Number.isFinite(scale) || scale <= 0) return 1
