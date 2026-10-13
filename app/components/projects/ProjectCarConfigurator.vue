@@ -728,8 +728,9 @@ function refreshStats() {
 }
 
 /* Сетка режима TECH: линии поверх кузова, дочерние к мешам — гаснут вместе
-   со своим вариантом обвеса и уезжают вместе с колёсами. Строятся лениво,
-   при первом включении, и не попадают в счётчик (это не меши). */
+   со своим вариантом обвеса. Только у самой машины: колёса не наша работа,
+   их сетку не показываем. Строятся лениво, при первом включении, и не
+   попадают в счётчик (это не меши). */
 const wireframe = ref(true)
 const showWireframe = computed(() => activeCategory.value === 'tech' && wireframe.value)
 let wireMaterial: THREE.LineBasicMaterial | null = null
@@ -738,12 +739,16 @@ function syncWireframe() {
   const active = viewer
   if (!active) return
   const on = showWireframe.value
+  const wheels = new Set(wheelNodes(active))
   const meshes: THREE.Mesh[] = []
-  for (const root of [active.model, active.wheels]) {
-    root.traverse((object) => {
-      if ((object as THREE.Mesh).isMesh && !object.userData.garageWire) meshes.push(object as THREE.Mesh)
-    })
-  }
+  active.model.traverse((object) => {
+    if (!(object as THREE.Mesh).isMesh || object.userData.garageWire) return
+    /* Колёса, ещё не перенесённые в `lod-wheels`, лежат внутри модели. */
+    for (let node: THREE.Object3D | null = object; node; node = node.parent) {
+      if (wheels.has(node)) return
+    }
+    meshes.push(object as THREE.Mesh)
+  })
   for (const mesh of meshes) {
     let line = mesh.children.find(child => child.userData.garageWire)
     if (!line && on) {
