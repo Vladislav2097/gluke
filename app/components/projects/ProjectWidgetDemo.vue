@@ -211,6 +211,14 @@ watch(isLight, () => {
   else instance.set(currentParams())
 })
 
+/* Смена языка не всегда перемонтирует компонент: страница кейса остаётся,
+   меняются только параметры кейса (тексты и слова у energy-hero). Тогда
+   виджет получает их здесь — как при перецеплении из кэша. */
+watch(() => props.demo.params, () => {
+  if (spec.value?.reapplyOnReattach === false) return
+  widget.value?.set(currentParams())
+})
+
 function reset() {
   /* Ключи чистим через Reflect, а не delete по вычисляемому ключу:
      значения по умолчанию всё равно подставляет currentParams(). */

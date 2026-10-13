@@ -28,7 +28,6 @@ demo:
   tunable: true
   params:
     staticLogo: /media/projects/energy-fill/g-static.svg
-    wordmark: /media/brand/gluke-logo-white.svg
     copyAccent: Digital marketing
     copyTitle: "that brings a business\nmeasurable results"
     copyText: "We make online marketing the engine of your business.\nWe turn the ad budget into a tool for growth\nand scaling, not a line of expenses"
@@ -206,4 +205,6 @@ In this version the client's mark is replaced with ours — the letter g: the en
 
 ## The result
 
-The animation lives on top of ordinary markup and does not touch it: the headline, copy and button stay HTML, while a transparent canvas draws the light, the wave and the particles. Below is the lab the scene was put together in: all ten phases with offset and duration, speed, loop, freeze frame and Scene moment, which stops the scene at any fraction of a second — and over a hundred parameters of the fill, the wave, the words, the stream and the button.
+The header of this page is the same scene at full screen, the way it sits as a website's first screen: a real headline, description and Discuss a project button on the left — the button leads to the contacts at the bottom of the page — and the mark with the words on the right. The animation lives on top of ordinary markup and does not touch it: the copy and the button stay HTML, while a transparent canvas draws the light, the wave and the particles. The mockup layout is centred on a screen of any proportions, and a phone gets its own scene from the second mockup.
+
+Below is the lab the scene was put together in, on the card from the original mockup: all ten phases with offset and duration, speed, loop, freeze frame and Scene moment, which stops the scene at any fraction of a second — and over a hundred parameters of the fill, the wave, the words, the stream and the button.

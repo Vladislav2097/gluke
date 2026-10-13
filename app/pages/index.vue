@@ -101,10 +101,7 @@ useSchemaOrg([
 
 <template>
   <div>
-    <!-- Первый экран — сцена с энергией на весь экран. Прежний hero
-         с раскрывающимся двигателем (HomeHero) остаётся в коде: вернуть его —
-         заменить компонент здесь. -->
-    <HomeEnergyHero :hero="site.hero" />
+    <HomeHero :hero="site.hero" />
 
     <HomeStats :stats="site.stats" />
 

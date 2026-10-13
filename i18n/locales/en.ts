@@ -34,18 +34,6 @@ export default {
     proof: 'Proof',
   },
   home: {
-    /* First screen: the words around the g mark in the animation. Order
-       follows the layout slots: top left, top right, middle left, middle
-       right; the left slots are narrow (between the copy and the mark). */
-    hero: {
-      /* Separate keys: vue-i18n reads `|` in a string as plural forms. */
-      energyWords: {
-        topLeft: 'MODELS',
-        topRight: 'INTERACTIVE',
-        midLeft: 'RENDERS',
-        midRight: 'ANIMATION',
-      },
-    },
     stats: {
       srTitle: 'Studio experience in numbers',
     },

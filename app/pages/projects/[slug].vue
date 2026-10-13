@@ -110,6 +110,10 @@ const isShowcase = computed(() => project.value.type === 'showcase')
    знака энергией. */
 const isBleedDemo = computed(() => isBleedDemoWidget(project.value.demo?.widget))
 
+/* Первый экран с энергией: шапка кейса — сама сцена на весь экран, с текстами
+   кейса и настоящей кнопкой к контактам внизу (ProjectEnergyHero). */
+const isEnergyHero = computed(() => project.value.demo?.widget === 'energy-hero')
+
 /* Сплэш приподнимается под липкий хедер на его высоту, а высота
    компенсируется паддингом: контент не прыгает, а канвас доходит до
    верхней кромки вьюпорта. Высота хедера меряется после монтирования
@@ -274,8 +278,13 @@ useSchemaOrg([
         </NuxtLink>
       </div>
 
+      <ProjectsProjectEnergyHero
+        v-if="isEnergyHero"
+        :project="project"
+      />
+
       <ProjectsProjectShowcaseHero
-        v-if="isShowcase"
+        v-else-if="isShowcase"
         :project="project"
       />
 
